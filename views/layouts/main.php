@@ -24,59 +24,224 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <html lang="<?= Yii::$app->language ?>" class="h-100">
 <head>
     <title><?= Html::encode($this->title) ?></title>
+     <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/main.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <?php $this->head() ?>
 </head>
-<body class="d-flex flex-column h-100">
+<body class="d-flex">
 <?php $this->beginBody() ?>
 
-<header id="header">
-    <?php
-    NavBar::begin([
-        'brandLabel' => Yii::$app->name,
-        'brandUrl' => Yii::$app->homeUrl,
-        'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top']
-    ]);
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav'],
-        'items' => [
-            ['label' => 'Home', 'url' => ['/site/index']],
-            ['label' => 'About', 'url' => ['/site/about']],
-            ['label' => 'Contact', 'url' => ['/site/contact']],
-            ['label' => 'Actores', 'url' => ['/actores/index']],
-            Yii::$app->user->isGuest
-                ? ['label' => 'Login', 'url' => ['/site/login']]
-                : '<li class="nav-item">'
-                    . Html::beginForm(['/site/logout'])
-                    . Html::submitButton(
-                        'Logout (' . Yii::$app->user->identity->username . ')',
-                        ['class' => 'nav-link btn btn-link logout']
-                    )
-                    . Html::endForm()
-                    . '</li>'
-        ]
-    ]);
-    NavBar::end();
-    ?>
-</header>
+<nav id="sidebar" class="bg-dark text-white vh-100" style="width:250px; position:fixed; padding-top:20px; transition: width .2s ease;">
+<div class="px-3 mb-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center logo-container">
+    <i class="bi bi-box-seam fs-4 text-warning"></i>
+    <span class="ms-2 logo-title text-white">SGTPT</span>
+  </div>
+  <button id="toggleSidebar" class="btn btn-sm btn-light ms-2">
+    <i class="bi bi-list"></i>
+  </button>
+</div>
 
-<main id="main" class="flex-shrink-0" role="main">
+<ul class="nav flex-column px-3">
+    <!-- Home -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/index']) ?>">
+            <i class="bi bi-house-door"></i>
+            <span class="link-text ms-2">Home</span>
+        </a>
+    </li>
+
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/bitacoras/index']) ?>">
+        <i class="bi bi-file-earmark-person-fill"></i>
+            <span class="link-text ms-2">Bitacora</span>
+        </a>
+    </li>
+  
+
+    <!-- Laboratorios -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseLaboratorios" role="button">
+            <i class="bi bi-building"></i><span class="link-text ms-2">Laboratorios</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseLaboratorios">
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>">
+                    <i class="bi bi-eye"></i><span class="link-text ms-2">Ver Laboratorios</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/laboratorios/create']) ?>">
+                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Laboratorio</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Equipos -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseEquipos" role="button">
+            <i class="bi bi-tools"></i><span class="link-text ms-2">Equipos</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseEquipos">
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/equipos/index']) ?>">
+                    <i class="bi bi-eye"></i><span class="link-text ms-2">Ver Equipos</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/equipos/crear']) ?>">
+                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Equipo</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Materiales -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseMateriales" role="button">
+            <i class="bi bi-box"></i><span class="link-text ms-2">Materiales</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseMateriales">
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/materiales/index']) ?>">
+                    <i class="bi bi-eye"></i><span class="link-text ms-2">Materiales</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/entradasmateriales/index']) ?>">
+                    <i class="bi bi-eye"></i><span class="link-text ms-2">Materiales</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Reservas -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseReservas" role="button">
+            <i class="bi bi-calendar"></i><span class="link-text ms-2">Reservas</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseReservas">
+          
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/reservas/index']) ?>">
+                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Reserva</span>
+                </a>
+            </li>
+           
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/reservas/horario']) ?>">
+                    <i class="bi bi-calendar-week"></i><span class="link-text ms-2">Vista por Semana</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['']) ?>">
+                    <i class="bi bi-calendar-month"></i><span class="link-text ms-2">Vista por Mes</span>
+                </a>
+            </li>
+        </ul>
+
+
+
+    </li>
+
+    <!-- Usuarios -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseUsuarios" role="button">
+            <i class="bi bi-person-circle"></i><span class="link-text ms-2">Usuarios</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseUsuarios">
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/usuarios/index']) ?>">
+                    <i class="bi bi-person-lines-fill"></i><span class="link-text ms-2">Gestión de Usuarios</span>
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <!-- Cuenta -->
+    <li class="nav-item mb-1">
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseCuenta" role="button">
+            <i class="bi bi-person-lock"></i><span class="link-text ms-2">Cerrar</span>
+            <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="collapse nav flex-column ms-3" id="collapseCuenta">
+            <?php if (Yii::$app->user->isGuest): ?>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/login']) ?>">
+                        <i class="bi bi-box-arrow-in-right"></i><span class="link-text ms-2">Login</span>
+                    </a>
+                </li>
+            <?php else: ?>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/logout']) ?>">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="link-text ms-2">Logout (<?= Yii::$app->user->identity->username ?>)</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </li>
+</ul>
+
+    
+
+
+</nav>
+
+
+<script>
+
+const sidebar = document.getElementById("sidebar"); // Asegúrate que el sidebar tiene este id
+const toggleBtn = document.getElementById("toggleSidebar");
+
+toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("sidebar-collapsed");
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const navLinks = sidebar.querySelectorAll('.nav-link');
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+
+    // Cuando haces clic en una opción, expande el sidebar automáticamente
+    navLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            // Solo si el sidebar está colapsado
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+            }
+        });
+    });
+});
+</script>
+<script>
+
+</script>
+
+
+
+
+<!-- Main content -->
+<main id="main" class="flex-grow-1 p-3" style="margin-left:250px;">
     <div class="container">
-        <?php if (!empty($this->params['breadcrumbs'])): ?>
-            <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>
-        <?php endif ?>
+        <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs'] ?? []]) ?>
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>
-</main>
 
-<footer id="footer" class="mt-auto py-3 bg-light">
-    <div class="container">
-        <div class="row text-muted">
-            <div class="col-md-6 text-center text-md-start">&copy; My Company <?= date('Y') ?></div>
-            <div class="col-md-6 text-center text-md-end"><?= Yii::powered() ?></div>
-        </div>
-    </div>
-</footer>
+
 
 <?php $this->endBody() ?>
 </body>

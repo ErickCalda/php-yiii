@@ -1,0 +1,172 @@
+
+
+
+
+
+
+
+    
+
+/* Cuando el sidebar está colapsado... */
+
+    #sidebar.collapsed .nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;       /* centra horizontalmente los items */
+    padding-left: 0 !important; /* quita padding sobrante */
+    padding-right: 0 !important;
+    }
+    
+    /* Cada item ocupa todo el ancho del sidebar colapsado */
+    #sidebar.collapsed .nav-item {
+    width: 100%;
+    margin-bottom: 0.5rem; /* un poquito de espacio vertical */
+    }
+    
+    /* El enlace (nav-link) también usa flex para centrar icono */
+    #sidebar.collapsed .nav-link {
+    display: flex !important;
+    justify-content: center !important; /* centra horizontal */
+    align-items: center !important;     /* centra vertical */
+    padding-left: 0.5rem !important;     /* si quieres un poco de breathing room */
+    padding-right: 0.5rem !important;
+    }
+    
+    /* Oculta el texto */
+    #sidebar.collapsed .link-text {
+    display: none;
+    }
+    
+    /* Ajusta la rotación de la flecha si la tienes */
+    #sidebar.collapsed .bi-chevron-down {
+    display: none; /* por lo general en collapsed no necesitas flechita */
+    }
+    
+        
+    
+    
+    
+    
+      /* Sidebar collapsed */
+    #sidebar.collapsed {
+      width: 80px !important;
+    }
+    
+    /* Oculta el texto */
+    #sidebar.collapsed .link-text {
+      display: none;
+    }
+    
+    /* Ajusta padding y centra los iconos */
+    #sidebar.collapsed .nav-link {
+      justify-content: center !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    
+    /* Elimina indentación de submenús */
+    #sidebar.collapsed .ms-3 {
+      margin-left: 0 !important;
+    }
+    
+    /* Remueve padding extra en la lista principal */
+    #sidebar.collapsed .px-3 {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    /* Espaciado vertical entre items para que no queden pegados */
+    #sidebar .nav-item {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Transición de ancho */
+    #sidebar {
+      transition: width .2s ease;
+    }
+    
+    /* Rota correctamente las flechas en colapsado/expandido */
+    .nav-link[aria-expanded="true"] .bi-chevron-down {
+      transform: rotate(0);
+    }
+    .nav-link[aria-expanded="false"] .bi-chevron-down {
+      transform: rotate(-90deg);
+    }
+    
+    /* Asegura que el collapse sea rápido y fluido */
+    .collapse,
+    .collapsing {
+      transition: height 200ms ease-out !important;
+      overflow: hidden !important;
+    }
+    
+    /* Cuando el sidebar está colapsado: */
+    #sidebar.collapsed {
+      /* ancho reducido, como ya lo tienes */
+      width: 80px !important;
+    }
+    
+    /* Oculta por completo cualquier <ul> de submenú */
+    #sidebar.collapsed ul.ms-3,
+    #sidebar.collapsed .collapse {
+      display: none !important;
+    }
+    #sidebar.collapsed {
+        width: 80px !important;
+        overflow-x: hidden;
+    }
+    
+    #sidebar.collapsed .nav-link {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    #sidebar.collapsed .nav-link span {
+        display: none;
+    }
+    
+    #sidebar.collapsed .nav .collapse,
+    #sidebar.collapsed .nav .ms-3 {
+        display: none !important;
+    }
+    
+    /* Transiciones suaves */
+    .logo-text {
+        transition: all 0.3s ease;
+    }
+    
+    .logo-title {
+        font-weight: bold;
+        font-size: 1.25rem;
+        transition: opacity 0.3s ease, margin 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    /* Cuando el sidebar está colapsado */
+    .sidebar-collapsed .logo-title {
+        opacity: 0;
+        margin-left: 0;
+        width: 0;
+        overflow: hidden;
+    }
+    /* Ocultar el botón cuando el sidebar está colapsado */
+    .sidebar-collapsed #toggleSidebar {
+        display: none !important;
+    }
+    
+    
+    
+    .logo-container {
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    /* En modo colapsado */
+    .sidebar-collapsed .logo-container {
+        justify-content: center !important;
+    }
+    
+    .sidebar-collapsed .logo-title {
+        display: none;
+    }
+    
