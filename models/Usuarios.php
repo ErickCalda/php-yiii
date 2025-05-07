@@ -226,4 +226,18 @@ class Usuarios extends \yii\db\ActiveRecord
     {
         return self::find()->all(); // Obtiene todos los usuarios
     }
+
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            // Asignar la fecha actual según la zona horaria de Ecuador
+            $this->fecha_creacion = Yii::$app->formatter->asDatetime('now', 'php:Y-m-d H:i:s');
+            $this->fecha_ultima_actualizacion = Yii::$app->formatter->asDatetime('now', 'php:Y-m-d H:i:s');
+            
+            return true;
+        }
+        return false;
+    }
+    
+
 }

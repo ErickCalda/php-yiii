@@ -1,5 +1,4 @@
 <?php
-
 namespace app\models;
 
 use Yii;
@@ -17,8 +16,6 @@ use Yii;
  */
 class Bitacoras extends \yii\db\ActiveRecord
 {
-
-
     /**
      * {@inheritdoc}
      */
@@ -76,4 +73,18 @@ class Bitacoras extends \yii\db\ActiveRecord
         return new BitacorasQuery(get_called_class());
     }
 
+    /**
+     * Automatically sets fecha_registro when creating or updating a record
+     */
+    public function beforeSave($insert)
+    {
+        if ($this->isNewRecord) {
+            // Si es un nuevo registro, asignar fecha de creación
+            $this->fecha_registro = date('Y-m-d H:i:s');
+        } else {
+            // Si no es nuevo, actualizar fecha de última actualización
+            $this->fecha_registro = date('Y-m-d H:i:s');
+        }
+        return parent::beforeSave($insert);
+    }
 }

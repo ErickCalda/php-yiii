@@ -181,7 +181,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                 </li>
             <?php else: ?>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/logout']) ?>">
+                    <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/login']) ?>">
                         <i class="bi bi-box-arrow-right"></i>
                         <span class="link-text ms-2">Logout (<?= Yii::$app->user->identity->username ?>)</span>
                     </a>

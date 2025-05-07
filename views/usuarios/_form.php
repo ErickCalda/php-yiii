@@ -24,9 +24,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'estado')->dropDownList([ 'activo' => 'Activo', 'inactivo' => 'Inactivo', 'bloqueado' => 'Bloqueado', ], ['prompt' => '']) ?>
 
-    <?= $form->field($model, 'fecha_creacion')->textInput() ?>
+    <?= $form->field($model, 'fecha_creacion')->textInput(['readonly' => true, 'value' => $model->fecha_creacion ? $model->fecha_creacion : date('Y-m-d H:i:s')]) ?>
 
-    <?= $form->field($model, 'fecha_ultima_actualizacion')->textInput() ?>
+<?= $form->field($model, 'fecha_ultima_actualizacion')->textInput(['readonly' => true, 'value' => $model->fecha_ultima_actualizacion ? $model->fecha_ultima_actualizacion : date('Y-m-d H:i:s')]) ?>
+
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('app', 'Save'), ['class' => 'btn btn-success']) ?>

@@ -50,7 +50,7 @@ $this->params['breadcrumbs'][] = $this->title;
             },
         ],
         'descripcion:ntext',
-        'archivo_adjunto',
+        
         'fecha_registro',
         [
             'class' => ActionColumn::className(),
