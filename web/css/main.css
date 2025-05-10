@@ -170,3 +170,148 @@
         display: none;
     }
     
+
+
+    #sidebar {
+  width: 250px;
+  transition: width 0.3s ease;
+  overflow-x: hidden;
+}
+
+#sidebar.collapsed {
+  width: 60px;
+}
+
+#main-content {
+  transition: margin-left 0.3s ease;
+  margin-left: 250px;
+}
+
+#sidebar.collapsed + #main-content {
+  margin-left: 60px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background-color: #343a40; /* color de fondo */
+  transition: width 0.3s ease; /* Transición suave cuando se expanda o contraiga */
+}
+
+#sidebar.collapsed {
+  width: 80px; /* Ajusta el tamaño del sidebar cuando está colapsado */
+}
+
+#main {
+  margin-left: 250px; /* Deja espacio para el sidebar */
+  transition: margin-left 0.3s ease; /* Transición suave para el contenido principal */
+}
+
+#sidebar.collapsed + #main {
+  margin-left: 80px; /* Cuando el sidebar se colapsa, ajusta el margen */
+}
+
+
+
+
+/*nuevo */
+
+
+/* Contenedor flexible para el logo y el texto */
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Ajuste para el título */
+.logo-title {
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  margin-left: 8px; /* Espacio entre el icono y el texto */
+}
+
+/* Cuando el sidebar está colapsado, ocultamos el texto */
+#sidebar.sidebar-collapsed .logo-title {
+  display: none; /* Oculta el texto */
+}
+
+/* Cuando el sidebar está colapsado, ocultamos el icono */
+#sidebar.sidebar-collapsed i {
+  display: none; /* Oculta el icono */
+}
+
+/* Mostrar solo el texto o el icono dependiendo del estado */
+#sidebar:not(.sidebar-collapsed) .logo-title {
+  display: block; /* Muestra el texto cuando no está colapsado */
+}
+
+#sidebar:not(.sidebar-collapsed) i {
+  display: block; /* Muestra el icono cuando no está colapsado */
+}
+
+/* Estilo del botón de despliegue */
+#toggleSidebar {
+  position: absolute;
+  top: 10px; /* Ajusta para que esté un poco más arriba */
+  left: 50%;
+  transform: translateX(-50%); /* Centrado horizontal */
+  z-index: 1050; /* Asegúrate de que el botón esté por encima de otros elementos */
+}
+
+
+
+
+
+
+
+
+/* Ocultar título cuando sidebar está contraído */
+.sidebar.sidebar-collapsed .logo-title {
+  display: none;
+}
+
+/* Ocultar icono cuando sidebar está expandido */
+.sidebar:not(.sidebar-collapsed) .logo-icon {
+  display: none;
+}
+
+/* Centrar vertical y horizontal */
+.logo-wrapper {
+  height: 60px; /* ajusta según el alto de tu sidebar */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Transición suave (opcional) */
+.logo-icon,
+.logo-title {
+  transition: all 0.3s ease;
+}
+.logo-title{
+
+  margin-top: 20px;
+  font-size: 2vw;
+  width: 100%;
+  text-align: center;
+  
+}
+.logo-container{
+  justify-content: center center;
+  align-items: center;
+  width: 100%;
+}
+.estylo{
+  background-color: rgb(22, 23, 29);
+  margin: 0;
+  border: 0;
+  border-radius: 5px;
+}

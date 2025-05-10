@@ -58,7 +58,7 @@ $this->params['breadcrumbs'][] = $this->title;
     .usuarios-index {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f9f9f9;
-        padding: 30px;
+        padding: 5px;
         border-radius: 8px;
     }
 

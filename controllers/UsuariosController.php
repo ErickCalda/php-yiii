@@ -1,7 +1,7 @@
 <?php
 
 namespace app\controllers;
-
+use Yii;  
 use app\models\Usuarios;
 use app\models\UsuariosSearch;
 use yii\web\Controller;
@@ -37,15 +37,26 @@ class UsuariosController extends Controller
      * @return string
      */
     public function actionIndex()
-    {
-        $searchModel = new UsuariosSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+{
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+
+    
+    $searchModel = new UsuariosSearch();
+    $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+  
+    // Verificar si el usuario está autenticado
+    $isAdmin = false;
+    if (!Yii::$app->user->isGuest) {
+        $isAdmin = Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
     }
+
+    return $this->render('index', [
+        'searchModel' => $searchModel,
+        'dataProvider' => $dataProvider,
+        'isAdmin' => $isAdmin, // Pasar el rol a la vista
+    ]);
+}
 
     /**
      * Displays a single Usuarios model.
@@ -67,6 +78,16 @@ class UsuariosController extends Controller
      */
     public function actionCreate()
     {
+/* 
+         if (Yii::$app->user->isGuest) {
+        // Redirigir al login si no hay sesión activa
+        return $this->redirect(['site/login']);
+    }
+ */
+
+      /*   if (Yii::$app->user->identity->role === 'laboratorista') {
+            throw new ForbiddenHttpException('No tienes permiso para crear usuarios.');
+        } */
         $model = new Usuarios();
 
         if ($this->request->isPost) {
@@ -91,6 +112,11 @@ class UsuariosController extends Controller
      */
     public function actionUpdate($id)
     {
+
+        if (Yii::$app->user->identity->rol === 'laboratorista') {
+            throw new ForbiddenHttpException('No tienes permiso para actualizar usuarios.');
+        }
+    
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
@@ -111,6 +137,10 @@ class UsuariosController extends Controller
      */
     public function actionDelete($id)
     {
+        if (Yii::$app->user->identity->rol === 'laboratorista') {
+            throw new ForbiddenHttpException('No tienes permiso para actualizar usuarios.');
+        }
+    
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

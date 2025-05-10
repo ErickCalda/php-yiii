@@ -1,5 +1,6 @@
 <?php
 
+
 use app\models\Bitacoras;
 use yii\helpers\Html;
 use yii\helpers\Url;
@@ -13,73 +14,82 @@ use yii\widgets\Pjax;
 $this->title = Yii::t('app', 'Bitacoras');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+
 <div class="bitacoras-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+```
+<h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a(Yii::t('app', 'Create Bitacoras'), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+<p>
+    <?= Html::a(Yii::t('app', 'Create Bitacoras'), ['create'], ['class' => 'btn btn-success']) ?>
+</p>
 
-    <?php Pjax::begin(); ?>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-    <div class="search-box" style="margin-bottom: 20px;">
-    <?= Html::beginForm(['bitacoras/index'], 'get') ?>
-        <?= Html::input('text', 'BitacorasSearch[descripcion, fecha_registro]', Yii::$app->request->get('BitacorasSearch')['descripcion,fecha_registro'] ?? '', [
-            'class' => 'form-control',
-            'placeholder' => 'Buscar por descripción...',
-            'style' => 'max-width: 300px; display: inline-block; margin-right: 10px;'
-        ]) ?>
-        <?= Html::submitButton('Buscar', ['class' => 'btn btn-primary']) ?>
-    <?= Html::endForm() ?>
+<?php Pjax::begin(); ?>
+<?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+<div class="search-box" style="margin-bottom: 20px;">
+<?= Html::beginForm(['bitacoras/index'], 'get') ?>
+    <?= Html::input('text', 'BitacorasSearch[descripcion, fecha_registro]', Yii::$app->request->get('BitacorasSearch')['descripcion,fecha_registro'] ?? '', [
+        'class' => 'form-control',
+        'placeholder' => 'Buscar por descripción...',
+        'style' => 'max-width: 300px; display: inline-block; margin-right: 10px;'
+    ]) ?>
+    <?= Html::submitButton('Buscar', ['class' => 'btn btn-primary']) ?>
+<?= Html::endForm() ?>
 </div>
 
-    <?= GridView::widget([
-    'dataProvider' => $dataProvider,
-    'filterModel' => null,
-    'columns' => [
-        ['class' => 'yii\grid\SerialColumn'],
 
-        [
-            'label' => 'Reservado por',
-            'attribute' => 'reserva_id',
-            'value' => function ($model) {
-                return $model->reserva && $model->reserva->usuario
-                    ? $model->reserva->usuario->nombre
-                    : 'No disponible';
+<?= GridView::widget([
+'dataProvider' => $dataProvider,
+'filterModel' => null,
+'columns' => [
+    ['class' => 'yii\grid\SerialColumn'],
+
+    [
+        'label' => 'Reservado por',
+        'attribute' => 'reserva_id',
+        'value' => function ($model) {
+            return $model->reserva && $model->reserva->usuario
+                ? $model->reserva->usuario->nombre
+                : 'No disponible';
+        },
+    ],
+    'descripcion:ntext',
+    
+    'fecha_registro',
+    [
+        'class' => ActionColumn::className(),
+        'urlCreator' => function ($action, Bitacoras $model, $key, $index, $column) {
+            return Url::toRoute([$action, 'id' => $model->id]);
+        },
+        'header' => 'Acciones',
+        'template' => '{menu}',
+        'buttons' => [
+            'menu' => function ($url, $model) {
+                return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
+                    'class' => 'btn btn-sm btn-info menu-toggle',
+                    'data-id' => $model->id,
+                    'title' => 'Opciones',
+                ]);
             },
-        ],
-        'descripcion:ntext',
-        
-        'fecha_registro',
-        [
-            'class' => ActionColumn::className(),
-            'urlCreator' => function ($action, Bitacoras $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id' => $model->id]);
-            },
-            'header' => 'Acciones',
-            'template' => '{menu}',
-            'buttons' => [
-                'menu' => function ($url, $model) {
-                    return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                        'class' => 'btn btn-sm btn-info menu-toggle',
-                        'data-id' => $model->id,
-                        'title' => 'Opciones',
-                    ]);
-                },
-            ],
         ],
     ],
+],
+
+
 ]); ?>
 
-    <?php Pjax::end(); ?>
+
+<?php Pjax::end(); ?>
+
 
 </div>
 
 <!-- Menú desplegable -->
+
 <div id="menu-container"></div>
 
 <!-- Estilos CSS -->
+
 <style>
     .bitacoras-index {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -181,6 +191,7 @@ $this->params['breadcrumbs'][] = $this->title;
 </style>
 
 <!-- Script para el menú desplegable -->
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const menuButtons = document.querySelectorAll('.menu-toggle');
@@ -239,3 +250,13 @@ $this->params['breadcrumbs'][] = $this->title;
         }
     }
 </script>
+
+<?php
+if (!Yii::$app->user->isGuest) {
+    // El usuario está autenticado
+    echo 'Bienvenido, ' . Yii::$app->user->identity->username; // Muestra el nombre de usuario
+} else {
+    // El usuario no está autenticado
+    echo 'Por favor inicie sesión.';
+}
+?>  

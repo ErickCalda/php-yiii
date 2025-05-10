@@ -6,40 +6,45 @@ use yii\base\Model;
 
 class LoginForm extends Model
 {
-    public $correo; // <--- AÑADE ESTA LÍNEA
-    public $password;
+    public $correo;
+    public $clave;
     public $rememberMe = true;
 
     private $_user = false;
 
-    // Reglas de validación
     public function rules()
-    {
-        return [
-            [['correo', 'password'], 'required'],
-            ['rememberMe', 'boolean'],
-            ['password', 'validatePassword'],
-        ];
-    }
+{
+    return [
+        [['correo', 'clave'], 'required'],
+        ['rememberMe', 'boolean'],
+        ['clave', 'validateClave'],
+    ];
+}
 
-    // Método para validar la contraseña
-    public function validatePassword($attribute, $params)
-    {
-        if (!$this->hasErrors()) {
-            $user = $this->getUser();
-            if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Correo o contraseña incorrectos.');
-            }
+public function validateClave($attribute, $params)
+{
+    if (!$this->hasErrors()) {
+        $user = $this->getUser();
+        if (!$user || !$user->validatePassword($this->clave)) {
+            $this->addError($attribute, 'Correo o clave incorrectos.');
         }
     }
+}
 
-    // Método para obtener el usuario por correo
-    public function getUser()
+    public function login()
+    {
+        if ($this->validate()) {
+            return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600 * 24 * 30 : 0);
+        }
+        return false;
+    }
+
+    protected function getUser()
     {
         if ($this->_user === false) {
-            $this->_user = User::findByCorreo($this->correo); // <--- Asegúrate que exista este método en tu modelo User
-        }
+            $this->_user = Usuarios::findByCorreo($this->correo);
 
+        }
         return $this->_user;
     }
 }

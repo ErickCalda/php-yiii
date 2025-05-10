@@ -13,18 +13,20 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'user' => [
+            'identityClass' => 'app\models\Usuarios',
+            'enableAutoLogin' => true,  // Habilita el inicio de sesión automático
+        ],
         
+     
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => 'OVPPY-xx1IFBOKN0cKTwpwhrG058S6EL',
+            'cookieValidationKey' => 'OVPPY-xx1IFBOKN0cKTwpwhrG058S6EL'
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
-        'user' => [
-            'identityClass' => 'app\models\User',
-            'enableAutoLogin' => true,
-        ],
+        
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
@@ -56,6 +58,7 @@ $config = [
         */
     ],
     'params' => $params,
+    
 ];
 
 if (YII_ENV_DEV) {

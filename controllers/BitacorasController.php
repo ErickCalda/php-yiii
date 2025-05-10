@@ -41,10 +41,13 @@ class BitacorasController extends Controller
         $searchModel = new BitacorasSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
+        
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+
+
     }
 
     /**
