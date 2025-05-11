@@ -21,20 +21,25 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
-<html lang="<?= Yii::$app->language ?>" class="h-100">
+<html lang="<?= Yii::$app->language ?>" >
 <head>
     <title><?= Html::encode($this->title) ?></title>
-     <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/main.css"> 
+     <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/main.css">
+     <!-- Agregar Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+ 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <?php $this->head() ?>
 </head>
-<body class="d-flex">
+<body class="d-flex" style="background-color: #37474F ;">
+
 <?php $this->beginBody() ?>
 
 
-<nav id="sidebar" class="bg-dark text-white vh-100" style="width:250px; position:fixed; padding-top:20px; transition: width .2s ease;">
+<nav id="sidebar" class=" text-white " style="width:250px; position:fixed; padding-top:20px; transition: width .2s ease; z-index: 9999;">
 
 <div class="px-3 mb-4 d-flex justify-content-start align-items-center">
   <div class="d-flex align-items-center logo-container">
@@ -42,10 +47,10 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
  
 
 <!-- Título (solo visible cuando está desplegado) -->
-<span class="ms-2 text-white fs-5 logo-title">GL</span>
+<span class="ms-2 text-black fs-5 logo-title">G.Lab</span>
   </div>
   <button id="toggleSidebar" class=" estylo  ms-2 d-flex align-items-center justify-content-center">
-    <i class="bi bi-list"></i>
+    <i class=" text-white bi-list" id="menu" style=""></i>
   </button>
 </div>
 
@@ -56,7 +61,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <!-- Home -->
 <li class="nav-item mb-1">
     <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/index']) ?>">
-        <i class="bi bi-house-door"></i>
+        <i class="bi text-white bi-house-door"></i>
         <span class="link-text ms-2">Home</span>
     </a>
 </li>
@@ -65,130 +70,87 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <!-- Bitacora -->
     <li class="nav-item mb-1">
         <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/bitacoras/index']) ?>">
-            <i class="bi bi-file-earmark-person-fill"></i>
+            <i class="bi text-white bi-file-earmark-person-fill"></i>
             <span class="link-text ms-2">Bitacora</span>
         </a>
     </li>
 
     <!-- Laboratorios -->
     <li class="nav-item mb-1">
-        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseLaboratorios" role="button">
-            <i class="bi bi-building"></i><span class="link-text ms-2">Laboratorios</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>" role="button">
+            <i class="bi text-white bi-building"></i><span class="link-text ms-2">G.Laboratorio</span>
+            
         </a>
-        <ul class="collapse nav flex-column ms-3" id="collapseLaboratorios">
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>">
-                    <i class="bi bi-eye"></i><span class="link-text ms-2">Ver Laboratorios</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/laboratorios/create']) ?>">
-                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Laboratorio</span>
-                </a>
-            </li>
-        </ul>
+        
     </li>
 
     <!-- Equipos -->
     <li class="nav-item mb-1">
-        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseEquipos" role="button">
-            <i class="bi bi-tools"></i><span class="link-text ms-2">Equipos</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle=""  href="<?= \yii\helpers\Url::to(['/equipos/index']) ?>" role="button">
+            <i class="bi text-white bi-tools"></i><span class="link-text ms-2">G.Equipos</span>
+          
         </a>
-        <ul class="collapse nav flex-column ms-3" id="collapseEquipos">
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/equipos/index']) ?>">
-                    <i class="bi bi-eye"></i><span class="link-text ms-2">Ver Equipos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/equipos/crear']) ?>">
-                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Equipo</span>
-                </a>
-            </li>
-        </ul>
+       
     </li>
 
     <!-- Materiales -->
     <li class="nav-item mb-1">
-        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseMateriales" role="button">
-            <i class="bi bi-box"></i><span class="link-text ms-2">Materiales</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/materiales/index']) ?>" role="button">
+            <i class="bi text-white bi-box"></i><span class="link-text ms-2">G.Materiales</span>
+           
         </a>
-        <ul class="collapse nav flex-column ms-3" id="collapseMateriales">
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/materiales/index']) ?>">
-                    <i class="bi bi-eye"></i><span class="link-text ms-2">Materiales</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/entradasmateriales/index']) ?>">
-                    <i class="bi bi-eye"></i><span class="link-text ms-2">Materiales</span>
-                </a>
-            </li>
-        </ul>
+        
     </li>
 
     <!-- Reservas -->
     <li class="nav-item mb-1">
         <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseReservas" role="button">
-            <i class="bi bi-calendar"></i><span class="link-text ms-2">Reservas</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
+            <i class="bi text-white bi-calendar"></i><span class="link-text ms-2">Reservas</span>
+            <i class="bi text-white bi-chevron-down ms-auto"></i>
         </a>
         <ul class="collapse nav flex-column ms-3" id="collapseReservas">
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/reservas/index']) ?>">
-                    <i class="bi bi-plus-circle"></i><span class="link-text ms-2">Crear Reserva</span>
+                    <i class="bi text-white bi-plus-circle"></i><span class="link-text ms-2">G.Reservas</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/reservas/horario']) ?>">
-                    <i class="bi bi-calendar-week"></i><span class="link-text ms-2">Vista por Semana</span>
+                    <i class="bi text-white bi-calendar-week"></i><span class="link-text ms-2">Horario</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['']) ?>">
-                    <i class="bi bi-calendar-month"></i><span class="link-text ms-2">Vista por Mes</span>
-                </a>
-            </li>
+           
         </ul>
     </li>
 
     <!-- Usuarios -->
     <li class="nav-item mb-1">
-        <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseUsuarios" role="button">
-            <i class="bi bi-person-circle"></i><span class="link-text ms-2">Usuarios</span>
-            <i class="bi bi-chevron-down ms-auto"></i>
+        <a class="nav-link text-white d-flex align-items-center " data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/usuarios/index']) ?>"role="button">
+            <i class="bi text-white bi-person-circle"></i><span class="link-text ms-2">G. de Usuarios</span>
+           
         </a>
-        <ul class="collapse nav flex-column ms-3" id="collapseUsuarios">
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/usuarios/index']) ?>">
-                    <i class="bi bi-person-lines-fill"></i><span class="link-text ms-2">Gestión de Usuarios</span>
-                </a>
-            </li>
-        </ul>
+        
     </li>
 <?php endif; ?>
 
 <!-- Cuenta -->
 <li class="nav-item mb-1">
     <a class="nav-link text-white d-flex align-items-center collapsed" data-bs-toggle="collapse" href="#collapseCuenta" role="button">
-        <i class="bi bi-person-lock"></i><span class="link-text ms-2">Cuenta</span>
-        <i class="bi bi-chevron-down ms-auto"></i>
+        <i class="bi text-white bi-person-lock"></i><span class="link-text ms-2">Cuenta</span>
+        <i class="bi text-white bi-chevron-down ms-auto"></i>
     </a>
     <ul class="collapse nav flex-column ms-3" id="collapseCuenta">
         <?php if (Yii::$app->user->isGuest): ?>
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/login']) ?>">
-                    <i class="bi bi-box-arrow-in-right"></i><span class="link-text ms-2">Login</span>
+                    <i class="bi text-white bi-box-arrow-in-right"></i><span class="link-text ms-2">Login</span>
                 </a>
             </li>
         <?php else: ?>
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center" href="<?= \yii\helpers\Url::to(['/site/logout']) ?>" data-method="post">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span class="link-text ms-2">Logout (<?= Yii::$app->user->identity->correo ?>)</span>
+                    <i class="bi text-white bi-box-arrow-right"></i>
+                    <span class="link-text  text-white ms-2">Logout
                 </a>
             </li>
         <?php endif; ?>
@@ -227,17 +189,48 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<!-- Main content -->
-<main id="main" class="flex-grow-1 p-3" style="margin-left:250px;">
-    <div class="container">
+
+<main id="main" class="flex-grow-1 p-1" style="margin-left:250px; position: relative;">
+    <div class="contenedor">
         <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs'] ?? []]) ?>
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>
 
+    <!-- Sección del usuario en la parte superior derecha -->
+    <?php if (!Yii::$app->user->isGuest): ?>
+        <div class="user-info position-absolute text-white" style="top: 10px; right: 20px; font-family: 'Roboto', sans-serif;">
+            <i class="bi text-white bi-person-circle" style="font-size: 24px;"></i>
+            <span style="font-size: 24px; margin-left: 8px;">
+                <?= Html::encode(Yii::$app->user->identity->nombre ?? 'Usuario desconocido') ?>
+                
+                <?php if (Yii::$app->user->identity->isRolAdmin()): ?>
+                    <span class="badge bg-danger" style="margin-left: 10px; font-size: 12px; font-weight: 500; padding: 2px 8px;">Administrador</span>
+                <?php else: ?>
+                    <span class="badge bg-secondary" style="margin-left: 10px; font-size: 12px; font-weight: 500; padding: 2px 8px;">Usuario</span>
+                <?php endif; ?>
+            </span>
+        </div>
+    <?php endif; ?>
+</main>
 
+<!-- Añadir Google Fonts en el head -->
+<?php $this->registerCss('
+    @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
+
+'); ?>
+
+
+
+
+
+
+    <?php
+$this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position' => \yii\web\View::POS_END]);
+?>
 
 <?php $this->endBody() ?>
+
 </body>
 </html>
 <?php $this->endPage() ?>

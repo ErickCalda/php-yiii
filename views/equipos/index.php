@@ -6,9 +6,12 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
+use app\models\Usuarios;
+
 /** @var yii\web\View $this */
 /** @var app\models\EquiposSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
+
 
 $this->title = Yii::t('app', 'Equipos');
 $this->params['breadcrumbs'][] = $this->title;
@@ -17,9 +20,12 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a(Yii::t('app', 'Create Equipos'), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+    <?php if (Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN): ?>
+        <!-- Solo los administradores pueden crear equipos -->
+        <p>
+            <?= Html::a(Yii::t('app', 'Create Equipos'), ['create'], ['class' => 'btn btn-success']) ?>
+        </p>
+    <?php endif; ?>
 
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -41,7 +47,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     return Url::toRoute([$action, 'id' => $model->id]);
                 },
                 'header' => 'Acciones',
-                'template' => '{menu}',
+                'template' => Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN ? '{menu}' : '',
                 'buttons' => [
                     'menu' => function ($url, $model) {
                         return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
@@ -58,7 +64,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?php Pjax::end(); ?>
 
 </div>
-
 <!-- Menú desplegable -->
 <div id="menu-container"></div>
 
@@ -160,6 +165,8 @@ $this->params['breadcrumbs'][] = $this->title;
     .dropdown-menu.show {
         display: block;
     }
+
+</style>
 
 </style>
 

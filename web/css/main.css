@@ -296,6 +296,7 @@ body {
 .logo-title {
   transition: all 0.3s ease;
 }
+
 .logo-title{
 
   margin-top: 20px;
@@ -310,8 +311,84 @@ body {
   width: 100%;
 }
 .estylo{
-  background-color: rgb(22, 23, 29);
+  background-color: #2f3d44;
   margin: 0;
   border: 0;
   border-radius: 5px;
 }
+
+.contenedor{
+  margin-left: 0;
+  margin-right: 0;
+ margin-top: 70px;
+  background-color: transparent;
+  
+  
+  
+}
+
+
+
+#sidebar{
+  height: 898px;
+  background-color:#2f3d44;
+  margin-right: 2px;
+
+}
+
+.nav{
+  background-color: transparent;
+  
+}
+#menu{
+  background-color:#2f3d44 ;
+}
+
+
+
+
+    /* Estilos generales */
+    main {
+      margin-left: 250px;
+      position: relative;
+      padding: 1rem;
+  }
+
+  /* Estilo responsivo */
+  @media (max-width: 1024px) {
+      main {
+          margin-left: 0; /* Quitar el margen izquierdo en pantallas medianas (como tabletas) */
+          padding: 1rem 0.5rem; /* Ajustar el padding para pantallas más pequeñas */
+      }
+  }
+
+  @media (max-width: 768px) {
+      main {
+          margin-left: 0; /* Eliminar el margen izquierdo para pantallas pequeñas (como móviles) */
+          padding: 0.5rem; /* Menos padding en pantallas más pequeñas */
+      }
+      .user-info {
+          top: 5px; /* Ajustar la posición del usuario */
+          right: 10px; /* Ajuste para pantallas pequeñas */
+          font-size: 18px; /* Ajustar tamaño de texto */
+      }
+      .badge {
+          font-size: 10px; /* Reduzco el tamaño de los distintivos */
+          padding: 2px 6px; /* Ajusto el padding */
+      }
+  }
+
+  @media (max-width: 576px) {
+      main {
+          padding: 0.5rem; /* Menos padding aún para dispositivos móviles */
+      }
+      .user-info {
+          top: 5px; /* Posicionamiento ajustado */
+          right: 5px; /* Posicionamiento ajustado */
+          font-size: 16px; /* Ajusto el tamaño de la fuente para móviles */
+      }
+      .badge {
+          font-size: 9px; /* Hago los distintivos aún más pequeños */
+          padding: 2px 5px; /* Reduzco el padding */
+      }
+  }

@@ -7,6 +7,8 @@ use app\models\BitacorasSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
+use app\models\Usuarios;
 
 /**
  * BitacorasController implements the CRUD actions for Bitacoras model.
@@ -16,21 +18,26 @@ class BitacorasController extends Controller
     /**
      * @inheritDoc
      */
+   
+    
     public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+                        }
                     ],
                 ],
-            ]
-        );
+            ],
+        ];
     }
-
     /**
      * Lists all Bitacoras models.
      *

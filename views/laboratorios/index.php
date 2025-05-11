@@ -6,6 +6,7 @@ use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
+
 /** @var yii\web\View $this */
 /** @var app\models\LaboratoriosSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
@@ -18,46 +19,48 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-  
-
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <?= GridView::widget([
-    'dataProvider' => $dataProvider,
-    'filterModel' => $searchModel,
-    'columns' => [
-        ['class' => 'yii\grid\SerialColumn'],
+        'dataProvider' => $dataProvider,
+        'filterModel' => $searchModel,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
 
-        'nombre',
-        'ubicacion',
-        'descripcion:ntext',
-        [
-            'label' => 'Responsable', // Cambia el título de la columna a 'Responsable'
-            'value' => function ($model) {
-                return $model->responsable ? $model->responsable->nombre : 'No asignado'; // Muestra el nombre del responsable
-            },
-            'filter' => \yii\helpers\ArrayHelper::map(\app\models\Usuarios::find()->all(), 'id', 'nombre'), // Filtrado por nombre del responsable
-        ],
-        [
-            'class' => ActionColumn::className(),
-            'urlCreator' => function ($action, Laboratorios $model, $key, $index, $column) {
-                return Url::toRoute([$action, 'id' => $model->id]);
-            },
-            'header' => 'Acciones',
-            'template' => '{menu}',
-            'buttons' => [
-                'menu' => function ($url, $model) {
-                    return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                        'class' => 'btn btn-sm btn-info menu-toggle',
-                        'data-id' => $model->id,
-                        'title' => 'Opciones',
-                    ]);
+            'nombre',
+            'ubicacion',
+            'descripcion:ntext',
+            [
+                'label' => 'Responsable', // Cambia el título de la columna a 'Responsable'
+                'value' => function ($model) {
+                    return $model->responsable ? $model->responsable->nombre : 'No asignado'; // Muestra el nombre del responsable
                 },
+                'filter' => \yii\helpers\ArrayHelper::map(\app\models\Usuarios::find()->all(), 'id', 'nombre'), // Filtrado por nombre del responsable
+            ],
+            [
+                'class' => ActionColumn::className(),
+                'urlCreator' => function ($action, Laboratorios $model, $key, $index, $column) {
+                    return Url::toRoute([$action, 'id' => $model->id]);
+                },
+                'header' => 'Acciones',
+                'template' => '{menu}', // Modificar para mostrar solo el menú
+                'buttons' => [
+                    'menu' => function ($url, $model) {
+                        // Verificar si el usuario es administrador
+                        if (Yii::$app->user->identity->rol === \app\models\Usuarios::ROL_ADMIN) {
+                            return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
+                                'class' => 'btn btn-sm btn-info menu-toggle',
+                                'data-id' => $model->id,
+                                'title' => 'Opciones',
+                            ]);
+                        }
+                        return ''; // Si no es admin, no se muestra el botón
+                    },
+                ],
             ],
         ],
-    ],
-]); ?>
+    ]); ?>
 
     <?php Pjax::end(); ?>
 

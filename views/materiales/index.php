@@ -11,22 +11,28 @@ use yii\widgets\Pjax;
 /** @var app\models\MaterialesSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
+
 $this->title = Yii::t('app', 'Materiales');
 $this->params['breadcrumbs'][] = $this->title;
+
+$isAdmin = !Yii::$app->user->isGuest && Yii::$app->user->identity->rol === \app\models\Usuarios::ROL_ADMIN;
+
 ?>
 <div class="materiales-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a(Yii::t('app', 'Crear Material'), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+    <?php if ($isAdmin): ?>
+        <p>
+            <?= Html::a(Yii::t('app', 'Crear Material'), ['create'], ['class' => 'btn btn-success']) ?>
+        </p>
+    <?php endif; ?>
 
     <?php Pjax::begin(); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'filterModel' => null, // eliminamos el filtro
+        'filterModel' => null,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
             'nombre',
@@ -41,10 +47,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 'class' => ActionColumn::className(),
                 'template' => '{menu}',
                 'buttons' => [
-                    'menu' => function ($url, $model) {
+                    'menu' => function ($url, $model) use ($isAdmin) {
                         return Html::button('<i class="bi bi-three-dots-vertical"></i>', [
                             'class' => 'btn btn-sm btn-info menu-toggle',
                             'data-id' => $model->id,
+                            'data-is-admin' => $isAdmin ? '1' : '0',
                         ]);
                     }
                 ],
@@ -147,21 +154,25 @@ $this->params['breadcrumbs'][] = $this->title;
         menuButtons.forEach(function (button) {
             button.addEventListener('click', function () {
                 const id = this.dataset.id;
+                const isAdmin = this.dataset.isAdmin === '1';
                 const menuContainer = document.getElementById('menu-container');
 
-                // Cerrar otros menús abiertos
                 menuContainer.innerHTML = '';
 
                 const menu = document.createElement('div');
                 menu.classList.add('dropdown-menu');
                 menu.setAttribute('id', 'dropdown-' + id);
 
-                menu.innerHTML = `
-                    <a href="<?= Url::to(['materiales/view', 'id' => '']) ?>${id}">Ver</a>
-                    <a href="<?= Url::to(['materiales/update', 'id' => '']) ?>${id}">Editar</a>
-                    <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
-                `;
+                let html = `<a href="<?= Url::to(['materiales/view', 'id' => '']) ?>${id}">Ver</a>`;
 
+                if (isAdmin) {
+                    html += `
+                        <a href="<?= Url::to(['materiales/update', 'id' => '']) ?>${id}">Editar</a>
+                        <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
+                    `;
+                }
+
+                menu.innerHTML = html;
                 menuContainer.appendChild(menu);
 
                 const rect = button.getBoundingClientRect();

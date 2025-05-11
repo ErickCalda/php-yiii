@@ -79,7 +79,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <style>
     .site-dashboard {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f4f4;
+        background-color:trasparet;
         padding: 30px;
         border-radius: 8px;
     }

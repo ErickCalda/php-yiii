@@ -62,7 +62,7 @@ class Reservas extends \yii\db\ActiveRecord
     {
         return [
             'id' => Yii::t('app', 'ID'),
-            'laboratorio_id' => Yii::t('app', 'Laboratorio ID'),
+            'laboratorio_id' => Yii::t('app', 'Laboratorio '),
             'usuario_id' => Yii::t('app', 'Usuario ID'),
             'fecha' => Yii::t('app', 'Fecha'),
             'hora_inicio' => Yii::t('app', 'Hora Inicio'),

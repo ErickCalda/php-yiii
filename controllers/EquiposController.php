@@ -7,6 +7,8 @@ use app\models\EquiposSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
+use app\models\Usuarios;
 
 /**
  * EquiposController implements the CRUD actions for Equipos model.
@@ -16,21 +18,32 @@ class EquiposController extends Controller
     /**
      * @inheritDoc
      */
-    public function behaviors()
-    {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
-                    ],
-                ],
-            ]
-        );
-    }
-
+       
+     public function behaviors()
+     {
+         return [
+             'verbs' => [
+                 'class' => VerbFilter::class,
+                 'actions' => [
+                     'delete' => ['POST'],
+                 ],
+             ],
+             'access' => [
+                 'class' => AccessControl::class,
+                 'only' => ['create', 'update', 'delete'],
+                 'rules' => [
+                     [
+                         'allow' => true,
+                         'roles' => ['@'],
+                         'matchCallback' => function ($rule, $action) {
+                             return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+                         },
+                     ],
+                 ],
+             ],
+         ];
+     }
+     
     /**
      * Lists all Equipos models.
      *

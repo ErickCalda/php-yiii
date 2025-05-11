@@ -7,6 +7,8 @@ use app\models\LaboratoriosSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
+use app\models\Usuarios;
 
 /**
  * LaboratoriosController implements the CRUD actions for Laboratorios model.
@@ -16,19 +18,30 @@ class LaboratoriosController extends Controller
     /**
      * @inheritDoc
      */
-    public function behaviors()
+   
+public function behaviors()
     {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
+        return [
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+                        },
                     ],
                 ],
-            ]
-        );
+            ],
+        ];
     }
 
     /**

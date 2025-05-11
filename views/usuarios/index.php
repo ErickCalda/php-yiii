@@ -7,20 +7,21 @@ use yii\grid\ActionColumn;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
 
-/** @var yii\web\View $this */
-/** @var app\models\UsuariosSearch $searchModel */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-
 $this->title = Yii::t('app', 'Usuarios');
 $this->params['breadcrumbs'][] = $this->title;
+
+$isAdmin = Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+
 ?>
 <div class="usuarios-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a(Yii::t('app', 'Crear Usuario'), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+    <?php if ($isAdmin): ?>
+        <p>
+            <?= Html::a(Yii::t('app', 'Crear Usuario'), ['create'], ['class' => 'btn btn-success']) ?>
+        </p>
+    <?php endif; ?>
 
     <?php Pjax::begin(); ?>
 
@@ -137,6 +138,8 @@ $this->params['breadcrumbs'][] = $this->title;
 </style>
 
 <script>
+    const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
+
     document.addEventListener('DOMContentLoaded', function () {
         const menuButtons = document.querySelectorAll('.menu-toggle');
 
@@ -150,12 +153,18 @@ $this->params['breadcrumbs'][] = $this->title;
                 menu.classList.add('dropdown-menu');
                 menu.setAttribute('id', 'dropdown-' + id);
 
-                menu.innerHTML = `
+                let html = `
                     <a href="<?= Url::to(['usuarios/view', 'id' => '']) ?>${id}">Ver</a>
-                    <a href="<?= Url::to(['usuarios/update', 'id' => '']) ?>${id}">Editar</a>
-                    <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
                 `;
 
+                if (isAdmin) {
+                    html += `
+                        <a href="<?= Url::to(['usuarios/update', 'id' => '']) ?>${id}">Editar</a>
+                        <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
+                    `;
+                }
+
+                menu.innerHTML = html;
                 menuContainer.appendChild(menu);
 
                 const rect = button.getBoundingClientRect();

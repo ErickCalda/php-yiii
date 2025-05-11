@@ -11,6 +11,8 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\db\Exception;
+use yii\filters\AccessControl;
+use app\models\Usuarios;
 
 
 /**
@@ -21,20 +23,31 @@ class ReservasController extends Controller
     /**
      * @inheritDoc
      */
-    public function behaviors()
-    {
-        return array_merge(
-            parent::behaviors(),
-            [
-                'verbs' => [
-                    'class' => VerbFilter::className(),
-                    'actions' => [
-                        'delete' => ['POST'],
-                    ],
+     
+public function behaviors()
+{
+    return [
+        'verbs' => [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'delete' => ['POST'],
+            ],
+        ],
+        'access' => [
+            'class' => AccessControl::class,
+            'only' => ['create', 'update', 'delete'],
+            'rules' => [
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'matchCallback' => function ($rule, $action) {
+                        return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+                    },
                 ],
-            ]
-        );
-    }
+            ],
+        ],
+    ];
+}
 
     /**
      * Lists all Reservas models.
@@ -150,12 +163,12 @@ class ReservasController extends Controller
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
-
-    // controllers/ReservasController.php
+// controllers/ReservasController.php
 public function actionHorario()
 {
     // Obtener todas las reservas aprobadas
-    $reservas = Reservas::find()->where(['estado' => 'aprobada'])->all();
+    $reservas = Reservas::find()->where(['estado' => ['aprobada', 'pendiente']])->all();
+
 
     // Organiza las reservas por día
     $horario = [];
@@ -167,7 +180,8 @@ public function actionHorario()
         $horario[$dia][] = $reserva;
     }
 
-    // Renderiza la vista con los datos de las reservas
+
+    // Renderiza la vista principal
     return $this->render('horario', [
         'horario' => $horario,
     ]);

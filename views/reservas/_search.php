@@ -8,33 +8,30 @@ use yii\widgets\ActiveForm;
 /** @var yii\widgets\ActiveForm $form */
 ?>
 
-<div class="reservas-search">
+<div class="reservas-search" style="max-width: 500px; margin: 0 auto;">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
         'method' => 'get',
         'options' => [
-            'data-pjax' => 1
+            'data-pjax' => 1,
+            'class' => 'd-flex flex-column align-items-center',
         ],
     ]); ?>
 
-    <?= $form->field($model, 'id') ?>
+    <!-- Campo de búsqueda -->
+    <div class="mb-3 w-100">
+        <?= $form->field($model, 'globalSearch')->textInput([
+            'placeholder' => 'Buscar...',
+            'class' => 'form-control',
+            'style' => 'border-radius: 0.5rem; padding: 0.5rem;',
+        ])->label(false) ?>
+    </div>
 
-    <?= $form->field($model, 'laboratorio_id') ?>
-
-    <?= $form->field($model, 'usuario_id') ?>
-
-    <?= $form->field($model, 'fecha') ?>
-
-    <?= $form->field($model, 'hora_inicio') ?>
-
-    <?php // echo $form->field($model, 'hora_fin') ?>
-
-    <?php // echo $form->field($model, 'estado') ?>
-
-    <div class="form-group">
-        <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>
-        <?= Html::resetButton(Yii::t('app', 'Reset'), ['class' => 'btn btn-outline-secondary']) ?>
+    <!-- Contenedor de botones -->
+    <div class="d-flex justify-content-between w-100">
+        <?= Html::submitButton(Yii::t('app', 'Buscar'), ['class' => 'btn btn-primary btn-sm me-2 w-48']) ?>
+        <?= Html::resetButton(Yii::t('app', 'Limpiar'), ['class' => 'btn btn-outline-secondary btn-sm w-48']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>
