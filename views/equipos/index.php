@@ -15,25 +15,30 @@ use app\models\Usuarios;
 
 $this->title = Yii::t('app', 'Equipos');
 $this->params['breadcrumbs'][] = $this->title;
+
+$isAdmin = !Yii::$app->user->isGuest
+    && Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
 ?>
+
 <div class="equipos-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <?php if (Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN): ?>
-        <!-- Solo los administradores pueden crear equipos -->
+    <?php if ($isAdmin): ?>
         <p>
-            <?= Html::a(Yii::t('app', 'Create Equipos'), ['create'], ['class' => 'btn btn-success']) ?>
+            <?= Html::a(Yii::t('app', 'Create Equipos'), ['create'], [
+                'class' => 'btn btn-success'
+            ]) ?>
         </p>
     <?php endif; ?>
 
     <?php Pjax::begin(); ?>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
+
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
@@ -41,20 +46,28 @@ $this->params['breadcrumbs'][] = $this->title;
             'codigo_interno',
             'descripcion:ntext',
             'estado',
+
             [
-                'class' => ActionColumn::className(),
+                'class' => ActionColumn::class,
+                'header' => 'Acciones',
+
                 'urlCreator' => function ($action, Equipos $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                 },
-                'header' => 'Acciones',
-                'template' => Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN ? '{menu}' : '',
+
+                'template' => $isAdmin ? '{menu}' : '',
+
                 'buttons' => [
                     'menu' => function ($url, $model) {
-                        return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                            'class' => 'btn btn-sm btn-info menu-toggle',
-                            'data-id' => $model->id,
-                            'title' => 'Opciones',
-                        ]);
+                        return Html::a(
+                            '<i class="bi bi-three-dots-vertical"></i>',
+                            'javascript:void(0);',
+                            [
+                                'class' => 'btn btn-sm btn-info menu-toggle',
+                                'data-id' => $model->id,
+                                'title' => 'Opciones',
+                            ]
+                        );
                     },
                 ],
             ],
@@ -62,6 +75,7 @@ $this->params['breadcrumbs'][] = $this->title;
     ]); ?>
 
     <?php Pjax::end(); ?>
+</div>
 
 </div>
 <!-- Menú desplegable -->
@@ -69,157 +83,274 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <!-- Estilos CSS -->
 <style>
-    .equipos-index {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f4f4;
-        padding: 30px;
-        border-radius: 8px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    h1 {
-        color: #2c3e50;
-        font-weight: bold;
-    }
+/* ===============================
+   PALETA GLOBAL (YA ESTÁ ESTÁNDAR)
+=================================*/
+:root{
+    --bg:#F8FAFC;
+    --surface:#FFFFFF;
+    --text:#0F172A;
+    --text-soft:#64748B;
+    --line:#E2E8F0;
+    --primary:#6366F1;
+    --primary-hover:#4F46E5;
+    --hover:#F8FAFC;
+}
 
-    .btn-success {
-        background-color: #3498db;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-    }
+/* BASE */
+body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+}
 
-    .btn-success:hover {
-        background-color: #2980b9;
-    }
+/* CONTENEDOR */
+.equipos-index{
+    max-width:1450px;
+    margin:auto;
+    padding:38px;
+}
 
-    .grid-view {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+/* TITULO */
+.equipos-index h1{
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:-1px;
+    color:var(--text);
+    margin-bottom:24px;
+}
 
-    .grid-view th, .grid-view td {
-        padding: 15px;
-        text-align: left;
-    }
+/* BOTON CREAR */
+.btn-success{
+    all:unset;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:11px 18px;
+    background:var(--primary);
+    color:white;
+    font-size:14px;
+    font-weight:600;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.18s ease;
+}
 
-    .grid-view th {
-        background-color: #2c3e50;
-        color: white;
-        font-weight: bold;
-    }
+.btn-success:hover{
+    background:var(--primary-hover);
+    transform:translateY(-1px);
+}
 
-    .grid-view td {
-        background-color: #ecf0f1;
-    }
+/* TABLA */
+.grid-view{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:24px;
+    overflow:hidden;
+}
 
-    .grid-view tr:hover {
-        background-color: #e2e6ea;
-    }
+/* TABLE */
+.grid-view table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-    .btn-sm {
-        border-radius: 3px;
-        padding: 5px 10px;
-    }
+/* HEADER */
+.grid-view thead th{
+    background:var(--surface);
+    color:var(--text-soft);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:700;
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+}
 
-    .btn-info {
-        font-size: 16px;
-        font-weight: bold;
-    }
+/* CELDAS */
+.grid-view tbody td{
+    background:var(--surface);
+    padding:22px 24px;
+    font-size:15px;
+    font-weight:500;
+    color:var(--text);
+    border-bottom:1px solid #F1F5F9;
+}
 
-    .btn-info:hover {
-        background-color: #2980b9;
-    }
+/* HOVER SUAVE */
+.grid-view tbody tr{
+    transition:.15s ease;
+}
 
-    /* Menú desplegable */
-    .menu-toggle {
-        cursor: pointer;
-        display: inline-block;
-    }
+.grid-view tbody tr:hover td{
+    background:var(--hover);
+}
 
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
-    }
+/* ULTIMA FILA */
+.grid-view tbody tr:last-child td{
+    border-bottom:none;
+}
 
-    .dropdown-menu a {
-        color: #2c3e50;
-        text-decoration: none;
-        display: block;
-        padding: 5px 10px;
-        font-weight: bold;
-    }
+/* BOTON MENU */
+.btn-info.menu-toggle{
+    all:unset;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--text-soft);
+    transition:.18s ease;
+}
 
-    .dropdown-menu a:hover {
-        background-color: #f0f0f0;
-        color: #2980b9;
-    }
+.btn-info.menu-toggle:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
 
-    /* Estilo cuando el menú está desplegado */
-    .dropdown-menu.show {
-        display: block;
-    }
+/* DROPDOWN MENU */
+.dropdown-menu{
+    display:none;
+    position:absolute;
+    min-width:190px;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:8px;
+    box-shadow:0 10px 30px rgba(15,23,42,.06);
+    z-index:999;
+}
 
+.dropdown-menu.show{
+    display:block;
+}
+
+/* ITEMS MENU */
+.dropdown-menu a{
+    display:block;
+    padding:12px 14px;
+    border-radius:12px;
+    text-decoration:none;
+    color:var(--text);
+    font-size:14px;
+    font-weight:500;
+    transition:.15s ease;
+}
+
+.dropdown-menu a:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+
+.equipos-index{
+    padding:20px;
+}
+
+.equipos-index h1{
+    font-size:28px;
+}
+
+.grid-view thead th,
+.grid-view tbody td{
+    padding:16px;
+    font-size:13px;
+}
+
+}
 </style>
 
 </style>
 
 <!-- Script para el menú desplegable -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const menuButtons = document.querySelectorAll('.menu-toggle');
 
-        menuButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = button.getAttribute('data-id');
-                const menuContainer = document.getElementById('menu-container');
 
-                // Cerrar cualquier menú abierto previamente
-                const openMenus = document.querySelectorAll('.dropdown-menu.show');
-                openMenus.forEach(function (menu) {
-                    menu.classList.remove('show');
-                });
+document.addEventListener('DOMContentLoaded', function () {
 
-                // Crear el contenido del menú
-                const menu = document.createElement('div');
-                menu.classList.add('dropdown-menu');
-                menu.setAttribute('id', 'menu-' + id);
+    let activeMenu = null;
+    let activeButton = null;
 
-                menu.innerHTML = `
-                    <a href="<?= Url::to(['equipos/view', 'id' => '']) ?>${id}">Ver</a>
-                    <a href="<?= Url::to(['equipos/update', 'id' => '']) ?>${id}">Editar</a>
+    document.querySelectorAll('.menu-toggle').forEach(button => {
+
+        button.addEventListener('click', function (e) {
+            e.stopPropagation();
+
+            const id = this.dataset.id;
+
+            // 🔥 SI HACES CLICK EN EL MISMO BOTÓN → CERRAR
+            if (activeButton === this) {
+                closeMenu();
+                return;
+            }
+
+            // 🔥 SI HAY OTRO MENÚ ABIERTO → CERRARLO
+            closeMenu();
+
+            activeButton = this;
+
+            const menu = document.createElement('div');
+            menu.className = 'dropdown-menu show';
+
+            let html = `
+                <a href="<?= Url::to(['usuarios/view', 'id' => '']) ?>${id}">Ver</a>
+            `;
+
+            if (<?= $isAdmin ? 'true' : 'false' ?>) {
+                html += `
+                    <a href="<?= Url::to(['usuarios/update', 'id' => '']) ?>${id}">Editar</a>
                     <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
                 `;
-
-                // Insertar el menú en el contenedor
-                menuContainer.appendChild(menu);
-
-                // Mostrar el menú desplegable
-                menu.classList.add('show');
-
-                // Posicionar el menú debajo del botón
-                const buttonRect = button.getBoundingClientRect();
-                menu.style.top = `${buttonRect.bottom + window.scrollY + 5}px`;
-                menu.style.left = `${buttonRect.left}px`;
-            });
-        });
-
-        // Cerrar el menú al hacer clic fuera
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.menu-toggle')) {
-                const openMenus = document.querySelectorAll('.dropdown-menu.show');
-                openMenus.forEach(function (menu) {
-                    menu.classList.remove('show');
-                });
             }
+
+            menu.innerHTML = html;
+            document.body.appendChild(menu);
+
+            activeMenu = menu;
+
+            const rect = this.getBoundingClientRect();
+
+            let top = rect.bottom + 8;
+            let left = rect.right - 180;
+
+            // 🔥 DETECTAR BORDE DERECHO
+            const menuWidth = 180;
+            const screenWidth = window.innerWidth;
+
+            if (left + menuWidth > screenWidth) {
+                left = screenWidth - menuWidth - 10;
+            }
+
+            menu.style.top = `${top}px`;
+            menu.style.left = `${left}px`;
         });
     });
+
+    // 🔥 CERRAR AL HACER CLICK FUERA
+    document.addEventListener('click', function () {
+        closeMenu();
+    });
+
+    // 🔥 CERRAR AL HACER SCROLL
+    window.addEventListener('scroll', function () {
+        closeMenu();
+    }, true);
+
+    function closeMenu() {
+        if (activeMenu) {
+            activeMenu.remove();
+            activeMenu = null;
+            activeButton = null;
+        }
+    }
+});
+
 
     // Función de confirmación de eliminación
     function confirmDelete(id) {

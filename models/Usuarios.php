@@ -4,14 +4,27 @@ namespace app\models;
 
 use Yii;
 use yii\web\IdentityInterface;
+use yii\db\ActiveRecord;
+
 
 class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
 {
-    const ROL_ADMIN = 'admin';
-    const ROL_LABORATORISTA = 'laboratorista';
+    // ========================
+    // ROLES (ahora por ID)
+    // ========================
+    // ROLES
+    const ROL_ADMIN = 1;
+    const ROL_DOCENTE = 2;
+    const ROL_LABORATORISTA = 3;
+
+    // ESTADOS
     const ESTADO_ACTIVO = 'activo';
     const ESTADO_INACTIVO = 'inactivo';
     const ESTADO_BLOQUEADO = 'bloqueado';
+
+
+
+    
 
     public static function tableName()
     {
@@ -21,14 +34,21 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['estado'], 'default', 'value' => 'activo'],
-            [['nombre', 'apellido', 'correo', 'clave', 'rol'], 'required'],
-            [['rol', 'estado'], 'string'],
+            [['estado'], 'default', 'value' => self::ESTADO_ACTIVO],
+
+            [['nombre', 'apellido', 'correo', 'clave'], 'required', 'message' => ''],
+
+            [['rol_id'], 'integer'],
+
+            [['estado'], 'string'],
+
             [['fecha_creacion', 'fecha_ultima_actualizacion'], 'safe'],
+
             [['nombre', 'apellido', 'correo', 'clave', 'auth_key', 'access_token'], 'string', 'max' => 255],
-            ['rol', 'in', 'range' => array_keys(self::optsRol())],
-            ['estado', 'in', 'range' => array_keys(self::optsEstado())],
+
             [['correo'], 'unique'],
+
+            ['estado', 'in', 'range' => array_keys(self::optsEstado())],
         ];
     }
 
@@ -40,13 +60,22 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
             'apellido' => Yii::t('app', 'Apellido'),
             'correo' => Yii::t('app', 'Correo'),
             'clave' => Yii::t('app', 'Clave'),
-            'rol' => Yii::t('app', 'Rol'),
+            'rol_id' => Yii::t('app', 'Rol'),
             'estado' => Yii::t('app', 'Estado'),
             'fecha_creacion' => Yii::t('app', 'Fecha Creación'),
             'fecha_ultima_actualizacion' => Yii::t('app', 'Fecha Última Actualización'),
         ];
     }
 
+
+    public function getRol()
+{
+    return $this->hasOne(Roles::class, ['id' => 'rol_id']);
+}
+
+    // ========================
+    // AUTH
+    // ========================
     public function generateAuthKey()
     {
         $this->auth_key = Yii::$app->security->generateRandomString();
@@ -57,16 +86,9 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
         $this->access_token = Yii::$app->security->generateRandomString();
     }
 
-    public static function find()
-    {
-        return new UsuariosQuery(get_called_class());
-    }
-
-    public static function findByCorreo($correo)
-    {
-        return static::findOne(['correo' => $correo]);
-    }
-
+    // ========================
+    // IDENTITY (Yii login)
+    // ========================
     public static function findIdentity($id)
     {
         return static::findOne($id);
@@ -92,97 +114,70 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
         return $this->auth_key === $authKey;
     }
 
+    // ========================
+    // LOGIN
+    // ========================
+    public static function findByCorreo($correo)
+    {
+        return static::findOne(['correo' => $correo]);
+    }
+
     public function validatePassword($password)
     {
         return Yii::$app->security->validatePassword($password, $this->clave);
     }
 
-    public static function optsRol()
-    {
-        return [
-            self::ROL_ADMIN => Yii::t('app', 'admin'),
-            self::ROL_LABORATORISTA => Yii::t('app', 'laboratorista'),
-        ];
-    }
-
+    // ========================
+    // ESTADOS
+    // ========================
     public static function optsEstado()
     {
         return [
-            self::ESTADO_ACTIVO => Yii::t('app', 'activo'),
-            self::ESTADO_INACTIVO => Yii::t('app', 'inactivo'),
-            self::ESTADO_BLOQUEADO => Yii::t('app', 'bloqueado'),
+            self::ESTADO_ACTIVO => 'activo',
+            self::ESTADO_INACTIVO => 'inactivo',
+            self::ESTADO_BLOQUEADO => 'bloqueado',
         ];
-    }
-
-    public function displayRol()
-    {
-        return self::optsRol()[$this->rol];
-    }
-
-    public function isRolAdmin()
-    {
-        return $this->rol === self::ROL_ADMIN;
-    }
-
-    public function setRolToAdmin()
-    {
-        $this->rol = self::ROL_ADMIN;
-    }
-
-    public function isRolLaboratorista()
-    {
-        return $this->rol === self::ROL_LABORATORISTA;
-    }
-
-    public function setRolToLaboratorista()
-    {
-        $this->rol = self::ROL_LABORATORISTA;
     }
 
     public function displayEstado()
     {
-        return self::optsEstado()[$this->estado];
+        return self::optsEstado()[$this->estado] ?? $this->estado;
     }
 
-    public function isEstadoActivo()
+    // ========================
+    // ROLES
+    // ========================
+    public static function optsRol()
     {
-        return $this->estado === self::ESTADO_ACTIVO;
+        return [
+            self::ROL_ADMIN => 'admin',
+            self::ROL_LABORATORISTA => 'laboratorista',
+        ];
     }
 
-    public function setEstadoToActivo()
+    public function getRolNombre()
     {
-        $this->estado = self::ESTADO_ACTIVO;
+        return self::optsRol()[$this->rol_id] ?? 'desconocido';
     }
 
-    public function isEstadoInactivo()
+    public function isAdmin()
     {
-        return $this->estado === self::ESTADO_INACTIVO;
+        return (int)$this->rol_id === self::ROL_ADMIN;
     }
 
-    public function setEstadoToInactivo()
+    public function isLaboratorista()
     {
-        $this->estado = self::ESTADO_INACTIVO;
+        return (int)$this->rol_id === self::ROL_LABORATORISTA;
     }
 
-    public function isEstadoBloqueado()
-    {
-        return $this->estado === self::ESTADO_BLOQUEADO;
-    }
-
-    public function setEstadoToBloqueado()
-    {
-        $this->estado = self::ESTADO_BLOQUEADO;
-    }
-
-    public static function findAllUsuarios()
-    {
-        return self::find()->all();
-    }
-
+    // ========================
+    // BEFORE SAVE
+    // ========================
     public function beforeSave($insert)
     {
         if (parent::beforeSave($insert)) {
-            $fechaActual = Yii::$app->formatter->asDatetime('now', 'php:Y-m-d H:i:s');
+
+            $fechaActual = date('Y-m-d H:i:s');
             $this->fecha_ultima_actualizacion = $fechaActual;
 
             if ($insert) {
@@ -191,17 +186,20 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
                 $this->generateAccessToken();
             }
 
+            // Hash password si cambia
             if ($this->isAttributeChanged('clave')) {
                 $this->clave = Yii::$app->security->generatePasswordHash($this->clave);
             }
 
             return true;
         }
+
         return false;
-      
     }
 
-    // Relaciones
+    // ========================
+    // RELACIONES
+    // ========================
     public function getEntradasMateriales()
     {
         return $this->hasMany(EntradasMateriales::class, ['usuario_id' => 'id']);
@@ -216,4 +214,5 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
     {
         return $this->hasMany(Reservas::class, ['usuario_id' => 'id']);
     }
+
 }

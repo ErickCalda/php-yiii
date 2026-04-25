@@ -4,6 +4,8 @@ use yii\helpers\Html;
 
 /** @var yii\web\View $this */
 /** @var app\models\Laboratorios $model */
+use yii\helpers\ArrayHelper;
+use app\models\Usuarios;
 
 $this->title = Yii::t('app', 'Create Laboratorios');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Laboratorios'), 'url' => ['index']];

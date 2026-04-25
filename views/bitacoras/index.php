@@ -1,228 +1,266 @@
+
 <?php
 
 use app\models\Bitacoras;
 use app\models\Usuarios;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use yii\grid\ActionColumn;
 use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
-/** @var app\models\BitacorasSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
+/** @var app\models\BitacorasSearch $searchModel */
 
-$this->title = Yii::t('app', 'Bitacoras');
+$this->title = 'Bitácora';
 $this->params['breadcrumbs'][] = $this->title;
 
-$isAdmin = Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
-
+$isAdmin = !Yii::$app->user->isGuest
+    && Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
 ?>
 
-<div class="bitacoras-index">
+<div class="bitacora-page">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <!-- HEADER -->
+    <div class="page-head">
 
-    <?php if ($isAdmin): ?>
-        <p>
-            <?= Html::a(Yii::t('app', 'Create Bitacoras'), ['create'], ['class' => 'btn btn-success']) ?>
-        </p>
-    <?php endif; ?>
+        <div>
+            <h1>Bitácora</h1>
+            <p>Actividad reciente y trazabilidad operativa del sistema.</p>
+        </div>
 
-    <?php Pjax::begin(); ?>
+        <div class="head-actions">
 
-    <div class="search-box" style="margin-bottom: 20px;">
-        <?= Html::beginForm(['bitacoras/index'], 'get') ?>
-        <?= Html::input('text', 'BitacorasSearch[descripcion]', Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '', [
-            'class' => 'form-control',
-            'placeholder' => 'Buscar por descripción...',
-            'style' => 'max-width: 300px; display: inline-block; margin-right: 10px;'
-        ]) ?>
-        <?= Html::submitButton('Buscar', ['class' => 'btn btn-primary']) ?>
-        <?= Html::endForm() ?>
+            <button type="button" class="view-btn active" id="btnTimeline">
+                Timeline
+            </button>
+
+            <button type="button" class="view-btn" id="btnTable">
+                Tabla
+            </button>
+
+            <?php if ($isAdmin): ?>
+               <button type="button" class="btn-primary" id="openCreateModal">
+                + Nueva entrada
+            </button>
+            <?php endif; ?>
+
+        </div>
+
     </div>
 
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => null,
-        'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-            [
-                'label' => 'Reservado por',
-                'attribute' => 'reserva_id',
-                'value' => function ($model) {
-                    return $model->reserva && $model->reserva->usuario
-                        ? $model->reserva->usuario->nombre
-                        : 'No disponible';
-                },
-            ],
-            'descripcion:ntext',
-            'fecha_registro',
-            [
-                'class' => ActionColumn::class,
-                'urlCreator' => function ($action, Bitacoras $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                },
-                'header' => 'Acciones',
-                'template' => '{menu}',
-                'buttons' => [
-                    'menu' => function ($url, $model) use ($isAdmin) {
-                        $id = $model->id;
-                        $ver = Html::a('Ver', Url::to(['bitacoras/view', 'id' => $id]));
-                        $editar = $isAdmin ? Html::a('Editar', Url::to(['bitacoras/update', 'id' => $id])) : '';
-                        $eliminar = $isAdmin ? Html::a('Eliminar', 'javascript:void(0);', ['onclick' => "confirmDelete($id)"]) : '';
-                        $menuId = 'menu-' . $id;
-                        return Html::tag('div', 
-                            Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                                'class' => 'btn btn-sm btn-info menu-toggle',
-                                'data-id' => $id,
-                                'title' => 'Opciones',
-                            ]) .
-                            Html::tag('div', $ver . $editar . $eliminar, [
-                                'class' => 'dropdown-menu',
-                                'id' => $menuId,
-                            ])
-                        );
-                    },
-                ],
-            ],
-        ],
-    ]); ?>
+    <!-- SEARCH -->
+    <div class="toolbar">
 
-    <?php Pjax::end(); ?>
+        <?= Html::beginForm(['bitacoras/index'], 'get') ?>
+
+        <?= Html::input(
+            'text',
+            'BitacorasSearch[descripcion]',
+            Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '',
+            [
+                'class' => 'search-input',
+                'placeholder' => 'Buscar descripción...'
+            ]
+        ) ?>
+
+        <?= Html::submitButton('Buscar', ['class' => 'btn-primary']) ?>
+
+        <?= Html::endForm() ?>
+
+    </div>
+
+   <?php Pjax::begin(['id' => 'bitacoraPjax']); ?>
+
+
+<!-- TIMELINE VIEW -->
+<div id="timelineView">
+
+    <div class="timeline">
+
+        <?php if (empty($dataProvider->models)): ?>
+
+            <div class="empty-state">
+                <h3>Sin registros</h3>
+                <p>No hay entradas disponibles.</p>
+            </div>
+
+        <?php else: ?>
+
+            <?php foreach ($dataProvider->models as $item): ?>
+
+                <?php
+                $usuario = $item->reserva && $item->reserva->usuario
+                    ? $item->reserva->usuario->nombre . ' ' . $item->reserva->usuario->apellido
+                    : 'Usuario no disponible';
+
+                $laboratorio = $item->reserva && $item->reserva->laboratorio
+                    ? $item->reserva->laboratorio->nombre
+                    : 'Laboratorio';
+
+                $fecha = Yii::$app->formatter->asDatetime($item->fecha_registro);
+                ?>
+
+                <div class="log-item">
+
+                    <div class="dot"></div>
+
+                    <div class="log-card">
+
+                        <div class="log-top">
+
+                            <div>
+                                <h3><?= Html::encode($laboratorio) ?></h3>
+                                <span><?= Html::encode($usuario) ?></span>
+                            </div>
+
+                            <small><?= $fecha ?></small>
+
+                        </div>
+
+                        <div class="log-body">
+                            <?= nl2br(Html::encode($item->descripcion)) ?>
+                        </div>
+
+                        <?php if ($isAdmin): ?>
+
+                            <div class="log-actions">
+
+                                <?= Html::a(
+                                    '<i class="bi bi-pencil"></i>',
+                                    ['update', 'id' => $item->id],
+                                    [
+                                        'class' => 'action-icon open-edit',
+                                        'title' => 'Editar'
+                                    ]
+                                ) ?>
+
+                                <?= Html::a(
+                                    '<i class="bi bi-trash"></i>',
+                                    ['delete', 'id' => $item->id],
+                                    [
+                                        'class' => 'action-icon danger',
+                                        'title' => 'Eliminar',
+                                        'data-confirm' => '¿Eliminar esta entrada?',
+                                        'data-method' => 'post',
+                                    ]
+                                ) ?>
+
+                            </div>
+
+                        <?php endif; ?>
+
+                    </div>
+
+                </div>
+
+            <?php endforeach; ?>
+
+        <?php endif; ?>
+
+    </div>
+
 </div>
 
-<div id="menu-container"></div>
 
-<!-- Estilos CSS -->
-<style>
-    .bitacoras-index {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f4f4;
-        padding: 30px;
-        border-radius: 8px;
+
+    </div><!-- TABLE VIEW -->
+<div id="tableView" style="display:none;">
+
+<?= GridView::widget([
+    'dataProvider' => $dataProvider,
+    'filterModel' => null,
+
+    'columns' => [
+
+        ['class' => 'yii\grid\SerialColumn'],
+
+        [
+            'label' => 'Usuario',
+            'value' => function ($model) {
+                return $model->reserva && $model->reserva->usuario
+                    ? $model->reserva->usuario->nombre
+                    : 'No disponible';
+            }
+        ],
+
+        [
+            'label' => 'Laboratorio',
+            'value' => function ($model) {
+                return $model->reserva && $model->reserva->laboratorio
+                    ? $model->reserva->laboratorio->nombre
+                    : 'No disponible';
+            }
+        ],
+
+        [
+            'attribute' => 'descripcion',
+            'format' => 'ntext'
+        ],
+
+        [
+            'attribute' => 'fecha_registro',
+            'format' => 'datetime'
+        ],
+
+      [
+    'class' => ActionColumn::class,
+    'template' => '{update} {delete}',
+
+    'buttons' => [
+
+        'update' => function ($url, $model) {
+            return Html::a(
+                '<i class="bi bi-pencil"></i>',
+                $url,
+                [
+                    'class' => 'action-icon open-edit',
+                    'title' => 'Editar'
+                ]
+            );
+        },
+
+        'delete' => function ($url, $model) {
+            return Html::a(
+                '<i class="bi bi-trash"></i>',
+                $url,
+                [
+                    'class' => 'action-icon danger',
+                    'title' => 'Eliminar',
+                    'data-confirm' => '¿Eliminar esta entrada?',
+                    'data-method' => 'post',
+                ]
+            );
+        },
+
+    ],
+
+    'urlCreator' => function ($action, Bitacoras $model) {
+        return Url::to([$action, 'id' => $model->id]);
     }
+]
+    ]
+]); ?>
 
-    h1 {
-        color: #2c3e50;
-        font-weight: bold;
-    }
+</div>
+    <?php Pjax::end(); ?>
 
-    .btn-success {
-        background-color: #3498db;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-    }
+    <!-- MODAL -->
+<div id="crudModal" class="crud-modal">
 
-    .btn-success:hover {
-        background-color: #2980b9;
-    }
+    <div class="crud-backdrop"></div>
 
-    .grid-view {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    <div class="crud-box">
 
-    .grid-view th, .grid-view td {
-        padding: 15px;
-        text-align: left;
-    }
+        <button class="close-modal" id="closeCrudModal">✕</button>
 
-    .grid-view th {
-        background-color: #2c3e50;
-        color: white;
-        font-weight: bold;
-    }
+        <div id="crudContent"></div>
 
-    .grid-view td {
-        background-color: #ecf0f1;
-    }
+    </div>
 
-    .grid-view tr:hover {
-        background-color: #e2e6ea;
-    }
+</div>
 
-    .btn-sm {
-        border-radius: 3px;
-        padding: 5px 10px;
-    }
+</div>
+<!-- REEMPLAZA TU <style> Y <script> POR ESTE BLOQUE MEJORADO -->
 
-    .btn-info {
-        font-size: 16px;
-        font-weight: bold;
-    }
-
-    .btn-info:hover {
-        background-color: #2980b9;
-    }
-
-    .menu-toggle {
-        cursor: pointer;
-        display: inline-block;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
-        z-index: 999;
-    }
-
-    .dropdown-menu a {
-        color: #2c3e50;
-        text-decoration: none;
-        display: block;
-        padding: 5px 10px;
-        font-weight: bold;
-    }
-
-    .dropdown-menu a:hover {
-        background-color: #f0f0f0;
-        color: #2980b9;
-    }
-
-    .dropdown-menu.show {
-        display: block;
-    }
-
-</style>
-
-<!-- Script para el menú desplegable -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const menuButtons = document.querySelectorAll('.menu-toggle');
-
-    menuButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
-            const id = button.getAttribute('data-id');
-            const menu = document.getElementById('menu-' + id);
-
-            // Cierra todos los menús excepto el actual
-            document.querySelectorAll('.dropdown-menu').forEach(el => {
-                if (el.id !== 'menu-' + id) el.classList.remove('show');
-            });
-
-            menu.classList.toggle('show');
-        });
-    });
-
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.menu-toggle') && !e.target.closest('.dropdown-menu')) {
-            document.querySelectorAll('.dropdown-menu').forEach(el => el.classList.remove('show'));
-        }
-    });
-});
-
-function confirmDelete(id) {
-    if (confirm("¿Estás seguro de eliminar esta bitácora?")) {
-        window.location.href = "<?= Url::to(['bitacoras/delete']) ?>?id=" + id;
-    }
-}
-</script>

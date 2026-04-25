@@ -1,19 +1,15 @@
 <?php
 
-
-
 namespace app\controllers;
 
 use Yii;
 use app\models\Reservas;
 use app\models\ReservasSearch;
+use app\models\Usuarios;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use yii\db\Exception;
 use yii\filters\AccessControl;
-use app\models\Usuarios;
-
 
 /**
  * ReservasController implements the CRUD actions for Reservas model.
@@ -23,36 +19,35 @@ class ReservasController extends Controller
     /**
      * @inheritDoc
      */
-     
-public function behaviors()
-{
-    return [
-        'verbs' => [
-            'class' => VerbFilter::class,
-            'actions' => [
-                'delete' => ['POST'],
-            ],
-        ],
-        'access' => [
-            'class' => AccessControl::class,
-            'only' => ['create', 'update', 'delete'],
-            'rules' => [
-                [
-                    'allow' => true,
-                    'roles' => ['@'],
-                    'matchCallback' => function ($rule, $action) {
-                        return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
-                    },
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
                 ],
             ],
-        ],
-    ];
-}
+
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return !Yii::$app->user->isGuest &&
+                                Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
+                        },
+                    ],
+                ],
+            ],
+        ];
+    }
 
     /**
-     * Lists all Reservas models.
-     *
-     * @return string
+     * Lista reservas
      */
     public function actionIndex()
     {
@@ -66,10 +61,7 @@ public function behaviors()
     }
 
     /**
-     * Displays a single Reservas model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
+     * Ver reserva
      */
     public function actionView($id)
     {
@@ -79,53 +71,52 @@ public function behaviors()
     }
 
     /**
-     * Creates a new Reservas model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
+     * Crear reserva
      */
-    public function actionCreate()
+public function actionCreate()
 {
     $model = new Reservas();
-    
-    // Verifica si se cargó el formulario
-    if ($model->load(Yii::$app->request->post())) {
-        try {
-            // Guardamos la reserva con el usuario seleccionado
-            if ($model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
-        } catch (\yii\db\Exception $e) {
-            // Detectamos si el error es por solapamiento de horarios
-            if (str_contains($e->getMessage(), 'se solapan')) {
-                // Agregar error solo en el campo hora_inicio
-                $model->addError('hora_inicio', 'Las horas se solapan con una reserva existente.');
-            } else {
-                throw $e; // Si es otro tipo de error, lo relanzamos
-            }
-        }
+
+    $hayUsuarios = Usuarios::find()
+        ->where(['estado' => 'activo'])
+        ->andWhere(['!=', 'rol_id', Usuarios::ROL_ADMIN])
+        ->exists();
+
+    if (!$hayUsuarios) {
+        Yii::$app->session->setFlash(
+            'warning',
+            'No existen usuarios disponibles para reservar.'
+        );
+
+        return $this->redirect(['index']);
     }
-    
-    // Renderizamos la vista de creación
+
+    if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        Yii::$app->session->setFlash('success', 'Reserva creada correctamente.');
+        return $this->redirect(['view', 'id' => $model->id]);
+    }
+
     return $this->render('create', [
         'model' => $model,
     ]);
 }
 
-    
-
-
     /**
-     * Updates an existing Reservas model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Editar reserva
      */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        if ($this->request->isPost &&
+            $model->load($this->request->post()) &&
+            $model->save()) {
+
+            Yii::$app->session->setFlash(
+                'success',
+                'Reserva actualizada correctamente.'
+            );
+
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -135,25 +126,48 @@ public function behaviors()
     }
 
     /**
-     * Deletes an existing Reservas model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Eliminar reserva
      */
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
 
+        Yii::$app->session->setFlash(
+            'success',
+            'Reserva eliminada correctamente.'
+        );
+
         return $this->redirect(['index']);
     }
 
     /**
-     * Finds the Reservas model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Reservas the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
+     * Horario general
+     */
+    public function actionHorario()
+    {
+        $reservas = Reservas::find()
+            ->where(['estado' => ['aprobada', 'pendiente']])
+            ->all();
+
+        $horario = [];
+
+        foreach ($reservas as $reserva) {
+            $dia = date('l', strtotime($reserva->fecha));
+
+            if (!isset($horario[$dia])) {
+                $horario[$dia] = [];
+            }
+
+            $horario[$dia][] = $reserva;
+        }
+
+        return $this->render('horario', [
+            'horario' => $horario,
+        ]);
+    }
+
+    /**
+     * Buscar modelo
      */
     protected function findModel($id)
     {
@@ -161,40 +175,8 @@ public function behaviors()
             return $model;
         }
 
-        throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+        throw new NotFoundHttpException(
+            Yii::t('app', 'The requested page does not exist.')
+        );
     }
-// controllers/ReservasController.php
-public function actionHorario()
-{
-    // Obtener todas las reservas aprobadas
-    $reservas = Reservas::find()->where(['estado' => ['aprobada', 'pendiente']])->all();
-
-
-    // Organiza las reservas por día
-    $horario = [];
-    foreach ($reservas as $reserva) {
-        $dia = date('l', strtotime($reserva->fecha)); // Obtiene el día de la semana
-        if (!isset($horario[$dia])) {
-            $horario[$dia] = [];
-        }
-        $horario[$dia][] = $reserva;
-    }
-
-
-    // Renderiza la vista principal
-    return $this->render('horario', [
-        'horario' => $horario,
-    ]);
-}
-
-
-
-
-
-
-
-
-
-
-    
 }

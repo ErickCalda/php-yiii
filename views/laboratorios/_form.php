@@ -2,10 +2,18 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
+use app\models\Usuarios;
 
 /** @var yii\web\View $this */
 /** @var app\models\Laboratorios $model */
 /** @var yii\widgets\ActiveForm $form */
+
+$usuarios = ArrayHelper::map(
+    Usuarios::find()->all(),
+    'id',
+    'nombre'
+);
 ?>
 
 <div class="laboratorios-form">
@@ -18,7 +26,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'descripcion')->textarea(['rows' => 6]) ?>
 
-    <?= $form->field($model, 'responsable_id')->textInput() ?>
+    <?= $form->field($model, 'responsable_id')->dropDownList(
+        $usuarios,
+        ['prompt' => 'Seleccione un responsable']
+    ) ?>
 
     <?= $form->field($model, 'capacidad')->textInput() ?>
 

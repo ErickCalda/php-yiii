@@ -9,6 +9,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use app\models\Usuarios;
+use Yii;
 
 /**
  * BitacorasController implements the CRUD actions for Bitacoras model.
@@ -19,25 +20,35 @@ class BitacorasController extends Controller
      * @inheritDoc
      */
    
-    
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['create', 'update', 'delete'],
-                'rules' => [
-                    [
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'matchCallback' => function ($rule, $action) {
-                            return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
-                        }
-                    ],
+public function behaviors()
+{
+    return [
+
+        'access' => [
+            'class' => AccessControl::class,
+            'only' => ['create', 'update', 'delete'],
+            'denyCallback' => function () {
+
+                if (Yii::$app->request->isAjax) {
+                    throw new \yii\web\ForbiddenHttpException('Sin permiso');
+                }
+
+                return $this->redirect(['site/index']);
+            },
+            'rules' => [
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'matchCallback' => function () {
+
+                        return (int) Yii::$app->user->identity->rol_id === (int) Usuarios::ROL_ADMIN;
+                    }
                 ],
             ],
-        ];
-    }
+        ],
+
+    ];
+}
     /**
      * Lists all Bitacoras models.
      *
@@ -75,22 +86,20 @@ class BitacorasController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate()
-    {
-        $model = new Bitacoras();
+public function actionCreate()
+{
+    $model = new Bitacoras();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
-        } else {
-            $model->loadDefaultValues();
-        }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
+    if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        return 'success';
     }
+
+    $this->layout = false;
+
+    return $this->renderAjax('_form', [
+        'model' => $model,
+    ]);
+}
 
     /**
      * Updates an existing Bitacoras model.
@@ -99,19 +108,20 @@ class BitacorasController extends Controller
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
+public function actionUpdate($id)
+{
+    $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
-
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+    if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        return 'success';
     }
 
+    $this->layout = false;
+
+    return $this->renderAjax('_form', [
+        'model' => $model,
+    ]);
+}
     /**
      * Deletes an existing Bitacoras model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
@@ -141,4 +151,18 @@ class BitacorasController extends Controller
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
+
+
+
+
+    public function actionTable()
+{
+    $searchModel = new BitacorasSearch();
+    $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+    return $this->render('table', [
+        'searchModel' => $searchModel,
+        'dataProvider' => $dataProvider,
+    ]);
+}
 }

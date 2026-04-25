@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use Yii; // 👈 ESTO ES LO QUE TE FALTA
 use app\models\Laboratorios;
 use app\models\LaboratoriosSearch;
 use yii\web\Controller;
@@ -36,7 +37,8 @@ public function behaviors()
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
+                            return !Yii::$app->user->isGuest
+                                && Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN;
                         },
                     ],
                 ],
@@ -78,23 +80,29 @@ public function behaviors()
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
      */
-    public function actionCreate()
-    {
-        $model = new Laboratorios();
+        public function actionCreate()
+        {
+            $model = new Laboratorios();
 
-        if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id]);
+            $usuarios = \yii\helpers\ArrayHelper::map(
+                \app\models\Usuarios::find()->all(),
+                'id',
+                'nombre'
+            );
+
+            if ($this->request->isPost) {
+                if ($model->load($this->request->post()) && $model->save()) {
+                    return $this->redirect(['view', 'id' => $model->id]);
+                }
+            } else {
+                $model->loadDefaultValues();
             }
-        } else {
-            $model->loadDefaultValues();
+
+            return $this->render('create', [
+                'model' => $model,
+                'usuarios' => $usuarios, // 🔴 ESTO ES OBLIGATORIO
+            ]);
         }
-
-        return $this->render('create', [
-            'model' => $model,
-        ]);
-    }
-
     /**
      * Updates an existing Laboratorios model.
      * If update is successful, the browser will be redirected to the 'view' page.
@@ -102,19 +110,25 @@ public function behaviors()
      * @return string|\yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
+public function actionUpdate($id)
+{
+    $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        }
+    $usuarios = \yii\helpers\ArrayHelper::map(
+        \app\models\Usuarios::find()->all(),
+        'id',
+        'nombre'
+    );
 
-        return $this->render('update', [
-            'model' => $model,
-        ]);
+    if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+        return $this->redirect(['view', 'id' => $model->id]);
     }
 
+    return $this->render('update', [
+        'model' => $model,
+        'usuarios' => $usuarios, //  IMPORTANTE
+    ]);
+}
     /**
      * Deletes an existing Laboratorios model.
      * If deletion is successful, the browser will be redirected to the 'index' page.

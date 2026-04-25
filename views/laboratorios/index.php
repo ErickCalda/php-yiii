@@ -21,46 +21,63 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?php Pjax::begin(); ?>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <p>
+    <?= Html::a('Crear Laboratorio', ['create'], [
+        'class' => 'btn btn-success'
+    ]) ?>
+</p>
 
     <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
+    'dataProvider' => $dataProvider,
+    'filterModel' => $searchModel,
+    'columns' => [
+        ['class' => 'yii\grid\SerialColumn'],
 
-            'nombre',
-            'ubicacion',
-            'descripcion:ntext',
-            [
-                'label' => 'Responsable', // Cambia el título de la columna a 'Responsable'
-                'value' => function ($model) {
-                    return $model->responsable ? $model->responsable->nombre : 'No asignado'; // Muestra el nombre del responsable
+        'nombre',
+        'ubicacion',
+        'descripcion:ntext',
+
+        [
+            'label' => 'Responsable',
+            'value' => function ($model) {
+                return $model->responsable
+                    ? $model->responsable->nombre
+                    : 'No asignado';
+            },
+            'filter' => \yii\helpers\ArrayHelper::map(
+                \app\models\Usuarios::find()->all(),
+                'id',
+                function ($u) {
+                    return $u->nombre . ' ' . $u->apellido;
+                }
+            ),
+        ],
+
+        [
+            'class' => \yii\grid\ActionColumn::class,
+            'header' => 'Acciones',
+            'template' => '{menu}',
+
+            'buttons' => [
+                'menu' => function ($url, $model) {
+
+                    if (
+                        !Yii::$app->user->isGuest &&
+                        Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN
+                    ) {
+                        return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
+                            'class' => 'btn btn-sm btn-info menu-toggle',
+                            'data-id' => $model->id,
+                            'title' => 'Opciones',
+                        ]);
+                    }
+
+                    return '';
                 },
-                'filter' => \yii\helpers\ArrayHelper::map(\app\models\Usuarios::find()->all(), 'id', 'nombre'), // Filtrado por nombre del responsable
-            ],
-            [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Laboratorios $model, $key, $index, $column) {
-                    return Url::toRoute([$action, 'id' => $model->id]);
-                },
-                'header' => 'Acciones',
-                'template' => '{menu}', // Modificar para mostrar solo el menú
-                'buttons' => [
-                    'menu' => function ($url, $model) {
-                        // Verificar si el usuario es administrador
-                        if (Yii::$app->user->identity->rol === \app\models\Usuarios::ROL_ADMIN) {
-                            return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                                'class' => 'btn btn-sm btn-info menu-toggle',
-                                'data-id' => $model->id,
-                                'title' => 'Opciones',
-                            ]);
-                        }
-                        return ''; // Si no es admin, no se muestra el botón
-                    },
-                ],
             ],
         ],
-    ]); ?>
+    ],
+]); ?>
 
     <?php Pjax::end(); ?>
 
@@ -71,103 +88,187 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <!-- Estilos CSS -->
 <style>
-    .laboratorios-index {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f4f4f4;
-        padding: 30px;
-        border-radius: 8px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    h1 {
-        color: #2c3e50;
-        font-weight: bold;
-    }
+/* ===============================
+   PALETA CONSISTENTE GLOBAL
+=================================*/
+:root{
+    --bg:#F8FAFC;
+    --surface:#FFFFFF;
+    --text:#0F172A;
+    --text-soft:#64748B;
+    --line:#E2E8F0;
+    --primary:#6366F1;
+    --primary-hover:#4F46E5;
+    --hover:#F8FAFC;
+}
 
-    .btn-success {
-        background-color: #3498db;
-        color: white;
-        border-radius: 5px;
-        font-weight: bold;
-    }
+/* BASE */
+body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+}
 
-    .btn-success:hover {
-        background-color: #2980b9;
-    }
+/* CONTENEDOR */
+.laboratorios-index{
+    max-width:1450px;
+    margin:auto;
+    padding:38px;
+}
 
-    .grid-view {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+/* TITULO */
+.laboratorios-index h1{
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:-1px;
+    color:var(--text);
+    margin-bottom:24px;
+}
 
-    .grid-view th, .grid-view td {
-        padding: 15px;
-        text-align: left;
-    }
+/* BOTÓN (si lo usas después) */
+.btn-success{
+    all:unset;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:11px 18px;
+    background:var(--primary);
+    color:white;
+    font-size:14px;
+    font-weight:600;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.18s ease;
+}
 
-    .grid-view th {
-        background-color: #2c3e50;
-        color: white;
-        font-weight: bold;
-    }
+.btn-success:hover{
+    background:var(--primary-hover);
+    transform:translateY(-1px);
+}
 
-    .grid-view td {
-        background-color: #ecf0f1;
-    }
+/* TABLA */
+.grid-view{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:24px;
+    overflow:hidden;
+}
 
-    .grid-view tr:hover {
-        background-color: #e2e6ea;
-    }
+/* TABLE */
+.grid-view table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-    .btn-sm {
-        border-radius: 3px;
-        padding: 5px 10px;
-    }
+/* HEADER */
+.grid-view thead th{
+    background:var(--surface);
+    color:var(--text-soft);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:700;
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+}
 
-    .btn-info {
-        font-size: 16px;
-        font-weight: bold;
-    }
+/* CELDAS */
+.grid-view tbody td{
+    background:var(--surface);
+    padding:22px 24px;
+    font-size:15px;
+    font-weight:500;
+    color:var(--text);
+    border-bottom:1px solid #F1F5F9;
+}
 
-    .btn-info:hover {
-        background-color: #2980b9;
-    }
+/* HOVER SUAVE */
+.grid-view tbody tr{
+    transition:.15s ease;
+}
 
-    /* Menú desplegable */
-    .menu-toggle {
-        cursor: pointer;
-        display: inline-block;
-    }
+.grid-view tbody tr:hover td{
+    background:var(--hover);
+}
 
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 14px;
-    }
+/* ULTIMA FILA */
+.grid-view tbody tr:last-child td{
+    border-bottom:none;
+}
 
-    .dropdown-menu a {
-        color: #2c3e50;
-        text-decoration: none;
-        display: block;
-        padding: 5px 10px;
-        font-weight: bold;
-    }
+/* BOTÓN MENÚ */
+.btn-info.menu-toggle{
+    all:unset;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--text-soft);
+    transition:.18s ease;
+}
 
-    .dropdown-menu a:hover {
-        background-color: #f0f0f0;
-        color: #2980b9;
-    }
+.btn-info.menu-toggle:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
 
-    /* Estilo cuando el menú está desplegado */
-    .dropdown-menu.show {
-        display: block;
-    }
+/* DROPDOWN */
+.dropdown-menu{
+    display:none;
+    position:absolute;
+    min-width:190px;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:8px;
+    box-shadow:0 10px 30px rgba(15,23,42,.06);
+    z-index:999;
+}
 
+.dropdown-menu.show{
+    display:block;
+}
+
+/* LINKS MENU */
+.dropdown-menu a{
+    display:block;
+    padding:12px 14px;
+    border-radius:12px;
+    text-decoration:none;
+    color:var(--text);
+    font-size:14px;
+    font-weight:500;
+    transition:.15s ease;
+}
+
+.dropdown-menu a:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+
+.laboratorios-index{
+    padding:20px;
+}
+
+.laboratorios-index h1{
+    font-size:28px;
+}
+
+.grid-view thead th,
+.grid-view tbody td{
+    padding:16px;
+    font-size:13px;
+}
+
+}
 </style>
 
 <!-- Script para el menú desplegable -->

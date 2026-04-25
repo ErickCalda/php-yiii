@@ -2,49 +2,60 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
+use yii\helpers\ArrayHelper;
+use app\models\Reservas;
 
-/** @var yii\web\View $this */
-/** @var app\models\Bitacoras $model */
-/** @var yii\widgets\ActiveForm $form */
-/** @var app\models\Reservas $model */
 ?>
 
 <div class="bitacoras-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+<?php $form = ActiveForm::begin([
+    'id' => 'bitacoraForm',
+    'options' => ['autocomplete' => 'off']
+]); ?>
 
-    <?= $form->field($model, 'reserva_id')->dropDownList(
-    \yii\helpers\ArrayHelper::map(
-        \app\models\Reservas::find()
-            ->select(['usuario_id'])      // Solo ID del usuario
-            ->distinct()                  // Solo valores únicos
-            ->with('usuario')             // Relación para traer el nombre
+<?= $form->field($model, 'reserva_id')->dropDownList(
+
+    ArrayHelper::map(
+        Reservas::find()
+            ->select(['usuario_id'])
+            ->distinct()
+            ->with('usuario')
             ->all(),
-        'usuario_id',                    // Este será el valor del <option>
-        function ($reserva) {
+
+        'usuario_id',
+
+        function($reserva){
             return $reserva->usuario->nombre ?? 'Sin nombre';
         }
     ),
-    ['prompt' => 'Selecciona una persona que reservó']
+
+    [
+        'prompt' => 'Selecciona una persona',
+        'class' => 'form-control'
+    ]
+
 ) ?>
 
-
-
-    <?= $form->field($model, 'descripcion')->textarea(['rows' => 6]) ?>
-
-    <?php //  $form->field($model, 'archivo_adjunto')->textInput(['maxlength' => true]); ?>
-
-    <?= $form->field($model, 'fecha_registro')->widget(\yii\jui\DatePicker::class, [
-    'language' => 'es',
-    'dateFormat' => 'yyyy-MM-dd',
-    'options' => ['class' => 'form-control'],
+<?= $form->field($model, 'descripcion')->textarea([
+    'rows' => 5,
+    'class' => 'form-control',
+    'placeholder' => 'Describe la actividad...'
 ]) ?>
 
+<?= $form->field($model, 'fecha_registro')->input('date', [
+    'class' => 'form-control'
+]) ?>
 
-    <div class="form-group">
-        <?= Html::submitButton(Yii::t('app', 'Save'), ['class' => 'btn btn-success']) ?>
-    </div>
+<div class="form-actions">
 
-    <?php ActiveForm::end(); ?>
+<?= Html::submitButton(
+    'Guardar',
+    ['class' => 'btn-save']
+) ?>
+
+</div>
+
+<?php ActiveForm::end(); ?>
 
 </div>

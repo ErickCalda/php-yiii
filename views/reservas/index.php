@@ -13,8 +13,8 @@ use yii\widgets\Pjax;
  
 $this->title = Yii::t('app', 'Reservas');
 $this->params['breadcrumbs'][] = $this->title;
-
-$isAdmin = !Yii::$app->user->isGuest && Yii::$app->user->identity->rol === \app\models\Usuarios::ROL_ADMIN;
+$isAdmin = !Yii::$app->user->isGuest
+    && Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN;
 
 ?>
 
@@ -24,7 +24,11 @@ $isAdmin = !Yii::$app->user->isGuest && Yii::$app->user->identity->rol === \app\
 
     <?php if ($isAdmin): ?>
         <p>
-            <?= Html::a(Yii::t('app', '<i class="fas fa-plus"></i> '), ['create'], ['class' => 'btn btn-success']) ?>
+            <?= Html::a(
+                Yii::t('app', '<i class="fas fa-plus"></i> '),
+                ['create'],
+                ['class' => 'btn btn-success']
+            ) ?>
         </p>
     <?php endif; ?>
 
@@ -103,254 +107,315 @@ $isAdmin = !Yii::$app->user->isGuest && Yii::$app->user->identity->rol === \app\
 
 
 <div id="menu-container"></div>
-
 <style>
-    .reservas-index {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f9f9f9;
-        padding: 30px;
-        border-radius: 8px;
-        z-index: 9;
-        
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    h1 {
-        color: #2c3e50;
-        font-weight: bold;
-    }
-
-    .btn-success {
-        background-color: #3498db;
-        border: none;
-        font-weight: bold;
-        border-radius: 5px;
-    }
-
-    .btn-success:hover {
-        background-color: #2980b9;
-    }
-
-    .table-scroll {
-        max-height: 500px; /* Altura máxima para scroll vertical */
-        overflow-y: auto;
-        overflow-x: auto;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .grid-view {
-        background-color: #ffffff;
-        min-width: 1000px;
-    }
-
-    .grid-view th {
-        background-color: #2c3e50;
-        color: white;
-        padding: 12px;
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
-
-    .grid-view td {
-        background-color: #f4f4f4;
-        padding: 12px;
-    }
-
-    .btn-info.menu-toggle {
-        background-color: #2c3e50;
-        color: white;
-        font-weight: bold;
-        border-radius: 4px;
-        border: none;
-    }
-
-    .btn-info.menu-toggle:hover {
-        background-color: #1a252f;
-    }
-
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background-color: #ffffff;
-        border: 1px solid #ddd;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        border-radius: 5px;
-        min-width: 14px;
-        
-        z-index: 999;
-        margin-right:10px ;
-    }
-    .dropdown-menu {
-        
-    }
-
-    .dropdown-menu a {
-        display: block;
-        padding: 8px 15px;
-        color: #2c3e50;
-        text-decoration: none;
-        font-weight: 500;
-    }
-
-    .dropdown-menu a:hover {
-        background-color: #f1f1f1;
-        color: #2980b9;
-    }
-
-    .dropdown-menu.show {
-        display: block;
-    }
-
-    .table-scroll::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+/* ===============================
+   PALETA GLOBAL
+=================================*/
+:root{
+    --bg:#F8FAFC;
+    --surface:#FFFFFF;
+    --text:#0F172A;
+    --text-soft:#64748B;
+    --line:#E2E8F0;
+    --primary:#6366F1;
+    --primary-hover:#4F46E5;
+    --hover:#F8FAFC;
 }
 
-.table-scroll::-webkit-scrollbar-track {
-    background: #ecf0f1;
-    border-radius: 10px;
+/* BASE */
+body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
 }
 
-.table-scroll::-webkit-scrollbar-thumb {
-    background-color: #34495e;
-    border-radius: 10px;
-    border: 2px solid #ecf0f1;
+/* CONTENEDOR */
+.reservas-index{
+    max-width:1500px;
+    margin:auto;
+    padding:38px;
 }
 
-.table-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: #2c3e50;
+/* TITULO */
+.reservas-index h1{
+    font-size:34px;
+    font-weight:700;
+    letter-spacing:-1px;
+    margin-bottom:24px;
+    color:var(--text);
 }
 
-.form-inline .form-control {
-    min-width: 200px;
+/* BOTONES */
+.btn-success,
+.btn-primary{
+    all:unset;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:11px 18px;
+    background:var(--primary);
+    color:white;
+    font-size:14px;
+    font-weight:600;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.18s ease;
 }
 
-.btn-primary {
-    background-color: #2980b9;
-    border: none;
+.btn-success:hover,
+.btn-primary:hover{
+    background:var(--primary-hover);
+    transform:translateY(-1px);
 }
 
-.btn-primary:hover {
-    background-color: #1c5986;
-}
-.table-scroll {
-   
-    position: relative; /* Esto a veces causa conflictos */
-}
-
-.swal2-popup-fixed-center {
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    position: top !important;
-    margin: 0 !important;
+/* LIMPIEZA FORM */
+.form-control{
+    height:44px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:0 14px;
+    font-size:14px;
+    color:var(--text);
+    background:white;
+    outline:none;
+    transition:.18s ease;
 }
 
-
-
-
-.table-scroll {
-    max-height: 500px; /* Altura máxima para scroll vertical */
-    overflow-y: auto;
-    overflow-x: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Asegura que la tabla ocupe todo el ancho del contenedor */
-    display: block; /* Esto es importante para habilitar el scroll horizontal */
+.form-control:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(99,102,241,.10);
 }
 
-.table-scroll table {
-    width: 100%; /* Asegura que la tabla ocupe todo el ancho disponible */
-    table-layout: auto; /* Hace que las columnas se ajusten al contenido */
+/* CONTENEDOR SCROLL */
+.table-scroll{
+    max-height:520px;
+    overflow:auto;
+    border-radius:24px;
+    background:var(--surface);
+    border:1px solid var(--line);
 }
 
-.grid-view th, .grid-view td {
-    white-space: nowrap; /* Previene el ajuste de texto dentro de las celdas */
+/* GRID */
+.grid-view{
+    min-width:1100px;
 }
 
-@media (max-width: 767px) {
-    .table-scroll {
-        max-height: 400px; /* Reducir la altura para pantallas más pequeñas */
-    }
-
-    .table-scroll table {
-        width: 100%; /* Asegura que la tabla se ajuste al 100% del contenedor */
-    }
-
-    .grid-view th, .grid-view td {
-        padding: 8px; /* Reducir el padding para pantallas más pequeñas */
-        font-size: 12px; /* Reducir el tamaño de la fuente */
-    }
-
-    .form-inline .form-control {
-        min-width: 150px; /* Ajustar el tamaño de los inputs en pantallas pequeñas */
-    }
-
-    .btn-primary, .btn-success {
-        font-size: 12px; /* Reducir el tamaño de los botones */
-    }
+/* HEADER */
+.grid-view th{
+    background:var(--surface);
+    color:var(--text-soft);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:700;
+    padding:18px 20px;
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    z-index:2;
 }
 
-@media (max-width: 480px) {
-    .grid-view th, .grid-view td {
-        font-size: 10px; /* Reducir más el tamaño de la fuente para pantallas muy pequeñas */
-        padding: 6px; /* Reducir el padding aún más */
-    }
-
-    .form-inline .form-control {
-        min-width: 120px; /* Ajustar el tamaño de los inputs aún más para pantallas muy pequeñas */
-    }
-
-    .btn-primary, .btn-success {
-        font-size: 10px; /* Reducir el tamaño de los botones para pantallas más pequeñas */
-    }
+/* CELDAS */
+.grid-view td{
+    background:var(--surface);
+    padding:18px 20px;
+    font-size:14px;
+    font-weight:500;
+    color:var(--text);
+    border-bottom:1px solid #F1F5F9;
 }
 
+/* HOVER SUAVE */
+.grid-view tr{
+    transition:.15s ease;
+}
 
+.grid-view tr:hover td{
+    background:var(--hover);
+}
+
+/* BOTON MENU */
+.btn-info.menu-toggle{
+    all:unset;
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:var(--text-soft);
+    transition:.18s ease;
+}
+
+.btn-info.menu-toggle:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
+
+/* DROPDOWN */
+.dropdown-menu{
+    display:none;
+    position:absolute;
+    min-width:190px;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:8px;
+    box-shadow:0 10px 30px rgba(15,23,42,.08);
+    z-index:999;
+}
+
+.dropdown-menu.show{
+    display:block;
+}
+
+/* ITEMS */
+.dropdown-menu a{
+    display:block;
+    padding:12px 14px;
+    border-radius:12px;
+    text-decoration:none;
+    color:var(--text);
+    font-size:14px;
+    font-weight:500;
+    transition:.15s ease;
+}
+
+.dropdown-menu a:hover{
+    background:#EEF2FF;
+    color:var(--primary);
+}
+
+/* SCROLLBAR */
+.table-scroll::-webkit-scrollbar{
+    width:10px;
+    height:10px;
+}
+
+.table-scroll::-webkit-scrollbar-track{
+    background:#F1F5F9;
+    border-radius:10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb{
+    background:#CBD5E1;
+    border-radius:10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover{
+    background:#94A3B8;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+
+.reservas-index{
+    padding:20px;
+}
+
+.reservas-index h1{
+    font-size:28px;
+}
+
+.grid-view th,
+.grid-view td{
+    padding:14px;
+    font-size:13px;
+}
+
+.table-scroll{
+    max-height:420px;
+}
+
+}
 </style>
 
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const menuButtons = document.querySelectorAll('.menu-toggle');
+  
 
-        menuButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = this.dataset.id;
-                const isAdmin = this.dataset.isAdmin === '1';
-                const menuContainer = document.getElementById('menu-container');
-                menuContainer.innerHTML = '';
+document.addEventListener('DOMContentLoaded', function () {
 
-                const menu = document.createElement('div');
-                menu.classList.add('dropdown-menu');
-                menu.setAttribute('id', 'dropdown-' + id);
+    let activeMenu = null;
+    let activeButton = null;
 
-                let html = `<a href="<?= Url::to(['reservas/view', 'id' => '']) ?>${id}">Ver</a>`;
+    document.querySelectorAll('.menu-toggle').forEach(button => {
 
-                if (isAdmin) {
-                    html += `
-                        <a href="<?= Url::to(['reservas/update', 'id' => '']) ?>${id}">Editar</a>
-                        <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
-                    `;
-                }
+        button.addEventListener('click', function (e) {
+            e.stopPropagation();
 
-                menu.innerHTML = html;
-                menuContainer.appendChild(menu);
+            const id = this.dataset.id;
 
-                const rect = button.getBoundingClientRect();
-                menu.style.top = (rect.bottom + window.scrollY) + 'px';
-                menu.style.left = (rect.left + window.scrollX) + 'px';
-
-                menu.classList.add('show');
-            });
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.menu-toggle') && !e.target.closest('.dropdown-menu')) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            // 🔥 SI HACES CLICK EN EL MISMO BOTÓN → CERRAR
+            if (activeButton === this) {
+                closeMenu();
+                return;
             }
+
+            // 🔥 SI HAY OTRO MENÚ ABIERTO → CERRARLO
+            closeMenu();
+
+            activeButton = this;
+
+            const menu = document.createElement('div');
+            menu.className = 'dropdown-menu show';
+
+            let html = `
+                <a href="<?= Url::to(['usuarios/view', 'id' => '']) ?>${id}">Ver</a>
+            `;
+
+            if (<?= $isAdmin ? 'true' : 'false' ?>) {
+                html += `
+                    <a href="<?= Url::to(['usuarios/update', 'id' => '']) ?>${id}">Editar</a>
+                    <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
+                `;
+            }
+
+            menu.innerHTML = html;
+            document.body.appendChild(menu);
+
+            activeMenu = menu;
+
+            const rect = this.getBoundingClientRect();
+
+            let top = rect.bottom + 8;
+            let left = rect.right - 180;
+
+            // 🔥 DETECTAR BORDE DERECHO
+            const menuWidth = 180;
+            const screenWidth = window.innerWidth;
+
+            if (left + menuWidth > screenWidth) {
+                left = screenWidth - menuWidth - 10;
+            }
+
+            menu.style.top = `${top}px`;
+            menu.style.left = `${left}px`;
         });
     });
+
+    // 🔥 CERRAR AL HACER CLICK FUERA
+    document.addEventListener('click', function () {
+        closeMenu();
+    });
+
+    // 🔥 CERRAR AL HACER SCROLL
+    window.addEventListener('scroll', function () {
+        closeMenu();
+    }, true);
+
+    function closeMenu() {
+        if (activeMenu) {
+            activeMenu.remove();
+            activeMenu = null;
+            activeButton = null;
+        }
+    }
+});
+
 
     function confirmDelete(id) {
         Swal.fire({

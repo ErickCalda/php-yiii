@@ -26,19 +26,21 @@ $this->params['breadcrumbs'][] = $this->title;
         ]) ?>
     </p>
 
-    <?= DetailView::widget([
-        'model' => $model,
-        'attributes' => [
-            'id',
-            'nombre',
-            'apellido',
-            'correo',
-            'clave',
-            'rol',
-            'estado',
-            'fecha_creacion',
-            'fecha_ultima_actualizacion',
+<?= DetailView::widget([
+    'model' => $model,
+    'attributes' => [
+        'id',
+        'nombre',
+        'apellido',
+        'correo',
+        [
+            'label' => 'Rol',
+            'value' => $model->rol ? $model->rol->nombre : 'Sin rol',
         ],
-    ]) ?>
+        'estado',
+        'fecha_creacion',
+        'fecha_ultima_actualizacion',
+    ],
+]) ?>
 
 </div>

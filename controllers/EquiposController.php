@@ -1,14 +1,17 @@
 <?php
 
+
+
 namespace app\controllers;
 
+use Yii;
 use app\models\Equipos;
 use app\models\EquiposSearch;
+use app\models\Usuarios;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use app\models\Usuarios;
 
 /**
  * EquiposController implements the CRUD actions for Equipos model.
@@ -19,31 +22,32 @@ class EquiposController extends Controller
      * @inheritDoc
      */
        
-     public function behaviors()
-     {
-         return [
-             'verbs' => [
-                 'class' => VerbFilter::class,
-                 'actions' => [
-                     'delete' => ['POST'],
-                 ],
-             ],
-             'access' => [
-                 'class' => AccessControl::class,
-                 'only' => ['create', 'update', 'delete'],
-                 'rules' => [
-                     [
-                         'allow' => true,
-                         'roles' => ['@'],
-                         'matchCallback' => function ($rule, $action) {
-                             return Yii::$app->user->identity->rol === Usuarios::ROL_ADMIN;
-                         },
-                     ],
-                 ],
-             ],
-         ];
-     }
-     
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return !Yii::$app->user->isGuest
+                                && Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
+                        },
+                    ],
+                ],
+            ],
+        ];
+    }
     /**
      * Lists all Equipos models.
      *
