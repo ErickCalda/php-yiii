@@ -1,4 +1,3 @@
-
 <?php
 
 use app\models\Bitacoras;
@@ -9,10 +8,6 @@ use yii\grid\GridView;
 use yii\grid\ActionColumn;
 use yii\widgets\Pjax;
 
-/** @var yii\web\View $this */
-/** @var yii\data\ActiveDataProvider $dataProvider */
-/** @var app\models\BitacorasSearch $searchModel */
-
 $this->title = 'Bitácora';
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -22,68 +17,68 @@ $isAdmin = !Yii::$app->user->isGuest
 
 <div class="bitacora-page">
 
-    <!-- HEADER -->
-    <div class="page-head">
+<!-- HEADER -->
+<div class="page-head">
 
-        <div>
-            <h1>Bitácora</h1>
-            <p>Actividad reciente y trazabilidad operativa del sistema.</p>
-        </div>
+    <div>
+        <h1>Bitácora</h1>
+        <p>Actividad reciente y trazabilidad operativa del sistema.</p>
+    </div>
 
-        <div class="head-actions">
+    <div class="head-actions">
 
-            <button type="button" class="view-btn active" id="btnTimeline">
-                Timeline
-            </button>
 
-            <button type="button" class="view-btn" id="btnTable">
-                Tabla
-            </button>
+      
 
-            <?php if ($isAdmin): ?>
-               <button type="button" class="btn-primary" id="openCreateModal">
+        <?php if ($isAdmin): ?>
+            <button type="button" class="btn-primary" id="openCreateModal">
                 + Nueva entrada
             </button>
-            <?php endif; ?>
-
-        </div>
+        <?php endif; ?>
 
     </div>
 
-    <!-- SEARCH -->
-    <div class="toolbar">
+</div>
 
-        <?= Html::beginForm(['bitacoras/index'], 'get') ?>
+<!-- SEARCH -->
+<div class="toolbar">
 
-        <?= Html::input(
-            'text',
-            'BitacorasSearch[descripcion]',
-            Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '',
-            [
-                'class' => 'search-input',
-                'placeholder' => 'Buscar descripción...'
-            ]
-        ) ?>
+    <?= Html::beginForm(['bitacoras/index'], 'get') ?>
 
-        <?= Html::submitButton('Buscar', ['class' => 'btn-primary']) ?>
+    <?= Html::input(
+        'text',
+        'BitacorasSearch[descripcion]',
+        Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '',
+        [
+            'class' => 'search-input',
+            'placeholder' => 'Buscar descripción...'
+        ]
+    ) ?>
 
-        <?= Html::endForm() ?>
+    <?= Html::submitButton('Buscar', ['class' => 'btn-primary']) ?>
 
-    </div>
+    <?= Html::endForm() ?>
 
-   <?php Pjax::begin(['id' => 'bitacoraPjax']); ?>
+</div>
+
+<?php Pjax::begin(['id' => 'bitacoraPjax']); ?>
+
+<!-- =========================
+     TIMELINE VIEW
+========================= -->
 
 
-<!-- TIMELINE VIEW -->
+
+
 <div id="timelineView">
 
-    <div class="timeline">
+    <div class="timeline-premium">
 
         <?php if (empty($dataProvider->models)): ?>
 
             <div class="empty-state">
                 <h3>Sin registros</h3>
-                <p>No hay entradas disponibles.</p>
+                <p>No hay actividad disponible.</p>
             </div>
 
         <?php else: ?>
@@ -97,41 +92,82 @@ $isAdmin = !Yii::$app->user->isGuest
 
                 $laboratorio = $item->reserva && $item->reserva->laboratorio
                     ? $item->reserva->laboratorio->nombre
-                    : 'Laboratorio';
+                    : 'Sin laboratorio';
 
-                $fecha = Yii::$app->formatter->asDatetime($item->fecha_registro);
+                $tipo = $item->tipoEvento?->nombre ?? 'Sin tipo';
+                $estado = $item->estado?->nombre ?? 'Sin estado';
+
+                $fecha = $item->fecha_evento
+                    ? Yii::$app->formatter->asDatetime($item->fecha_evento)
+                    : 'Sin fecha';
                 ?>
 
-                <div class="log-item">
+                <article class="premium-card">
 
-                    <div class="dot"></div>
+                    <!-- TOP -->
+                    <div class="premium-top">
 
-                    <div class="log-card">
+                        <div class="premium-mark"></div>
 
-                        <div class="log-top">
+                        <div class="premium-main">
 
-                            <div>
-                                <h3><?= Html::encode($laboratorio) ?></h3>
-                                <span><?= Html::encode($usuario) ?></span>
+                            <div class="premium-headline">
+
+                                <h3>
+                                    <?= Html::encode($item->titulo ?: 'Sin título') ?>
+                                </h3>
+
+                                <time>
+                                    <i class="bi bi-calendar3"></i>
+                                    <?= $fecha ?>
+                                </time>
+
                             </div>
 
-                            <small><?= $fecha ?></small>
+                            <p class="premium-desc">
+                                <?= nl2br(Html::encode($item->descripcion)) ?>
+                            </p>
 
                         </div>
 
-                        <div class="log-body">
-                            <?= nl2br(Html::encode($item->descripcion)) ?>
+                    </div>
+
+                    <!-- FOOT -->
+                    <div class="premium-foot">
+
+                        <div class="premium-tags">
+
+                            <span>
+                                <i class="bi bi-person-circle"></i>
+                                <?= Html::encode($usuario) ?>
+                            </span>
+
+                            <span>
+                                <i class="bi bi-building"></i>
+                                <?= Html::encode($laboratorio) ?>
+                            </span>
+
+                            <span>
+                                <i class="bi bi-tag"></i>
+                                <?= Html::encode($tipo) ?>
+                            </span>
+
+                            <span>
+                                <i class="bi bi-shield-check"></i>
+                                <?= Html::encode($estado) ?>
+                            </span>
+
                         </div>
 
                         <?php if ($isAdmin): ?>
 
-                            <div class="log-actions">
+                            <div class="premium-actions">
 
                                 <?= Html::a(
                                     '<i class="bi bi-pencil"></i>',
                                     ['update', 'id' => $item->id],
                                     [
-                                        'class' => 'action-icon open-edit',
+                                        'class' => 'premium-btn open-edit',
                                         'title' => 'Editar'
                                     ]
                                 ) ?>
@@ -140,7 +176,7 @@ $isAdmin = !Yii::$app->user->isGuest
                                     '<i class="bi bi-trash"></i>',
                                     ['delete', 'id' => $item->id],
                                     [
-                                        'class' => 'action-icon danger',
+                                        'class' => 'premium-btn danger',
                                         'title' => 'Eliminar',
                                         'data-confirm' => '¿Eliminar esta entrada?',
                                         'data-method' => 'post',
@@ -153,7 +189,7 @@ $isAdmin = !Yii::$app->user->isGuest
 
                     </div>
 
-                </div>
+                </article>
 
             <?php endforeach; ?>
 
@@ -165,88 +201,17 @@ $isAdmin = !Yii::$app->user->isGuest
 
 
 
-    </div><!-- TABLE VIEW -->
-<div id="tableView" style="display:none;">
 
-<?= GridView::widget([
-    'dataProvider' => $dataProvider,
-    'filterModel' => null,
 
-    'columns' => [
 
-        ['class' => 'yii\grid\SerialColumn'],
+<!-- =========================
+     TABLE VIEW
+========================= -->
 
-        [
-            'label' => 'Usuario',
-            'value' => function ($model) {
-                return $model->reserva && $model->reserva->usuario
-                    ? $model->reserva->usuario->nombre
-                    : 'No disponible';
-            }
-        ],
 
-        [
-            'label' => 'Laboratorio',
-            'value' => function ($model) {
-                return $model->reserva && $model->reserva->laboratorio
-                    ? $model->reserva->laboratorio->nombre
-                    : 'No disponible';
-            }
-        ],
+<?php Pjax::end(); ?>
 
-        [
-            'attribute' => 'descripcion',
-            'format' => 'ntext'
-        ],
-
-        [
-            'attribute' => 'fecha_registro',
-            'format' => 'datetime'
-        ],
-
-      [
-    'class' => ActionColumn::class,
-    'template' => '{update} {delete}',
-
-    'buttons' => [
-
-        'update' => function ($url, $model) {
-            return Html::a(
-                '<i class="bi bi-pencil"></i>',
-                $url,
-                [
-                    'class' => 'action-icon open-edit',
-                    'title' => 'Editar'
-                ]
-            );
-        },
-
-        'delete' => function ($url, $model) {
-            return Html::a(
-                '<i class="bi bi-trash"></i>',
-                $url,
-                [
-                    'class' => 'action-icon danger',
-                    'title' => 'Eliminar',
-                    'data-confirm' => '¿Eliminar esta entrada?',
-                    'data-method' => 'post',
-                ]
-            );
-        },
-
-    ],
-
-    'urlCreator' => function ($action, Bitacoras $model) {
-        return Url::to([$action, 'id' => $model->id]);
-    }
-]
-    ]
-]); ?>
-
-</div>
-    <?php Pjax::end(); ?>
-
-    <!-- MODAL -->
+<!-- MODAL -->
 <div id="crudModal" class="crud-modal">
 
     <div class="crud-backdrop"></div>
@@ -262,5 +227,3 @@ $isAdmin = !Yii::$app->user->isGuest
 </div>
 
 </div>
-<!-- REEMPLAZA TU <style> Y <script> POR ESTE BLOQUE MEJORADO -->
-

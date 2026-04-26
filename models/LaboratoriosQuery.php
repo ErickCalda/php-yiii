@@ -2,17 +2,78 @@
 
 namespace app\models;
 
+use yii\db\ActiveQuery;
+
 /**
  * This is the ActiveQuery class for [[Laboratorios]].
  *
  * @see Laboratorios
  */
-class LaboratoriosQuery extends \yii\db\ActiveQuery
+class LaboratoriosQuery extends ActiveQuery
 {
-    /*public function active()
+    /**
+     * Laboratorios activos
+     */
+    public function activos()
     {
-        return $this->andWhere('[[status]]=1');
-    }*/
+        return $this->joinWith('estado')
+            ->andWhere(['cat_estados_laboratorio.codigo' => 'ACTIVO']);
+    }
+
+    /**
+     * Con relaciones principales
+     */
+    public function completos()
+    {
+        return $this->with([
+            'tipo',
+            'estado',
+            'ubicacion',
+        ]);
+    }
+
+    /**
+     * Ordenados por nombre
+     */
+    public function ordenNombre()
+    {
+        return $this->orderBy(['nombre' => SORT_ASC]);
+    }
+
+    /**
+     * Buscar por tipo
+     */
+    public function porTipo($tipoId)
+    {
+        return $this->andWhere(['tipo_id' => $tipoId]);
+    }
+
+    /**
+     * Buscar por estado
+     */
+    public function porEstado($estadoId)
+    {
+        return $this->andWhere(['estado_id' => $estadoId]);
+    }
+
+    /**
+     * Con capacidad mínima
+     */
+    public function capacidadMin($capacidad)
+    {
+        return $this->andWhere(['>=', 'capacidad', $capacidad]);
+    }
+
+    /**
+     * Disponibles para reservas
+     */
+    public function disponibles()
+    {
+        return $this->joinWith('estado')
+            ->andWhere([
+                'cat_estados_laboratorio.codigo' => 'ACTIVO'
+            ]);
+    }
 
     /**
      * {@inheritdoc}

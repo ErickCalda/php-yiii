@@ -1,332 +1,275 @@
 <?php
 
-use app\models\Laboratorios;
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\grid\ActionColumn;
-use yii\grid\GridView;
 use yii\widgets\Pjax;
 
 /** @var yii\web\View $this */
 /** @var app\models\LaboratoriosSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = Yii::t('app', 'Laboratorios');
+
+$this->title = 'Laboratorios';
 $this->params['breadcrumbs'][] = $this->title;
+
+$models = $dataProvider->getModels();
+$total  = $dataProvider->getTotalCount();
 ?>
 
-<div class="laboratorios-index">
+<div class="labs-premium">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+<!-- HERO -->
+<section class="hero-panel">
 
-    <?php Pjax::begin(); ?>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-    <p>
-    <?= Html::a('Crear Laboratorio', ['create'], [
-        'class' => 'btn btn-success'
-    ]) ?>
-</p>
+    <div class="hero-left">
 
-    <?= GridView::widget([
-    'dataProvider' => $dataProvider,
-    'filterModel' => $searchModel,
-    'columns' => [
-        ['class' => 'yii\grid\SerialColumn'],
+        <span class="mini-badge">Sistema Inteligente</span>
 
-        'nombre',
-        'ubicacion',
-        'descripcion:ntext',
+        <h1><?= Html::encode($this->title) ?></h1>
 
-        [
-            'label' => 'Responsable',
-            'value' => function ($model) {
-                return $model->responsable
-                    ? $model->responsable->nombre
-                    : 'No asignado';
-            },
-            'filter' => \yii\helpers\ArrayHelper::map(
-                \app\models\Usuarios::find()->all(),
-                'id',
-                function ($u) {
-                    return $u->nombre . ' ' . $u->apellido;
-                }
-            ),
-        ],
+        <p>
+            Administra espacios académicos con una interfaz moderna,
+            visual y totalmente responsive.
+        </p>
 
-        [
-            'class' => \yii\grid\ActionColumn::class,
-            'header' => 'Acciones',
-            'template' => '{menu}',
+    </div>
 
-            'buttons' => [
-                'menu' => function ($url, $model) {
+    <div class="hero-right">
 
-                    if (
-                        !Yii::$app->user->isGuest &&
-                        Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN
-                    ) {
-                        return Html::a('<i class="bi bi-three-dots-vertical"></i>', 'javascript:void(0);', [
-                            'class' => 'btn btn-sm btn-info menu-toggle',
-                            'data-id' => $model->id,
-                            'title' => 'Opciones',
-                        ]);
-                    }
+        <?= Html::a(
+            '＋ Nuevo Laboratorio',
+            ['create'],
+            ['class' => 'btn-main']
+        ) ?>
 
-                    return '';
-                },
-            ],
-        ],
-    ],
+    </div>
+
+</section>
+
+<?php Pjax::begin([
+    'timeout' => 5000,
+    'enablePushState' => false,
 ]); ?>
 
-    <?php Pjax::end(); ?>
+<!-- TOPBAR -->
+<section class="top-tools">
+
+<?= Html::beginForm(['index'], 'get', [
+    'data-pjax' => 1,
+    'class' => 'search-box'
+]) ?>
+
+<input
+type="text"
+name="LaboratoriosSearch[nombre]"
+value="<?= Html::encode($searchModel->nombre) ?>"
+placeholder="Buscar laboratorio..."
+class="search-input"
+>
+
+<button type="submit" class="btn-search">
+Buscar
+</button>
+
+<?= Html::endForm() ?>
+
+<div class="stats-row">
+
+    <div class="stat-card">
+        <small>Total</small>
+        <strong><?= $total ?></strong>
+    </div>
+
+
+
+
 
 </div>
 
-<!-- Menú desplegable -->
-<div id="menu-container"></div>
+</section>
 
-<!-- Estilos CSS -->
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+<!-- GRID -->
+<section class="labs-grid">
 
-/* ===============================
-   PALETA CONSISTENTE GLOBAL
-=================================*/
-:root{
-    --bg:#F8FAFC;
-    --surface:#FFFFFF;
-    --text:#0F172A;
-    --text-soft:#64748B;
-    --line:#E2E8F0;
-    --primary:#6366F1;
-    --primary-hover:#4F46E5;
-    --hover:#F8FAFC;
-}
+<?php foreach($models as $model): ?>
 
-/* BASE */
-body{
-    background:var(--bg);
-    font-family:'Inter',sans-serif;
-    color:var(--text);
-}
+<?php
+$estado = $model->estado->nombre ?? 'Sin estado';
+$color  = strtolower($model->estado->color ?? 'gray');
+$tipo   = $model->tipo->nombre ?? 'General';
+$ubi    = $model->ubicacionTexto ?? '-';
+$responsable = $model->responsable->nombre ?? null;
+$responsableTexto = $responsable ? $responsable : 'Sin responsable';
+?>
 
-/* CONTENEDOR */
-.laboratorios-index{
-    max-width:1450px;
-    margin:auto;
-    padding:38px;
-}
+<article class="lab-card reveal">
 
-/* TITULO */
-.laboratorios-index h1{
-    font-size:34px;
-    font-weight:700;
-    letter-spacing:-1px;
-    color:var(--text);
-    margin-bottom:24px;
-}
+    <div class="card-top">
 
-/* BOTÓN (si lo usas después) */
-.btn-success{
-    all:unset;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:11px 18px;
-    background:var(--primary);
-    color:white;
-    font-size:14px;
-    font-weight:600;
-    border-radius:10px;
-    cursor:pointer;
-    transition:.18s ease;
-}
+        <span class="code">
+            <?= Html::encode($model->codigo) ?>
+        </span>
 
-.btn-success:hover{
-    background:var(--primary-hover);
-    transform:translateY(-1px);
-}
+        <span class="badge badge-<?= $color ?>">
+            <?= Html::encode($estado) ?>
+        </span>
 
-/* TABLA */
-.grid-view{
-    background:var(--surface);
-    border:1px solid var(--line);
-    border-radius:24px;
-    overflow:hidden;
-}
+    </div>
 
-/* TABLE */
-.grid-view table{
-    width:100%;
-    border-collapse:collapse;
-}
+    <div class="card-center">
 
-/* HEADER */
-.grid-view thead th{
-    background:var(--surface);
-    color:var(--text-soft);
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:.08em;
-    font-weight:700;
-    padding:20px 24px;
-    border-bottom:1px solid var(--line);
-}
+        <h3><?= Html::encode($model->nombre) ?></h3>
 
-/* CELDAS */
-.grid-view tbody td{
-    background:var(--surface);
-    padding:22px 24px;
-    font-size:15px;
-    font-weight:500;
-    color:var(--text);
-    border-bottom:1px solid #F1F5F9;
-}
+        <p class="type">
+            <?= Html::encode($tipo) ?>
+        </p>
 
-/* HOVER SUAVE */
-.grid-view tbody tr{
-    transition:.15s ease;
-}
+    </div>
 
-.grid-view tbody tr:hover td{
-    background:var(--hover);
-}
+    <div class="meta-wrap">
 
-/* ULTIMA FILA */
-.grid-view tbody tr:last-child td{
-    border-bottom:none;
-}
+        <div class="meta-item">
+            <span>👥</span>
+            <div>
+                <small>Capacidad</small>
+                <strong><?= $model->capacidad ?> personas</strong>
+            </div>
+        </div>
 
-/* BOTÓN MENÚ */
-.btn-info.menu-toggle{
-    all:unset;
-    width:34px;
-    height:34px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    color:var(--text-soft);
-    transition:.18s ease;
-}
+        <div class="meta-item">
+            <span>📍</span>
+            <div>
+                <small>Ubicación</small>
+                <strong><?= Html::encode($ubi) ?></strong>
+            </div>
+        </div>
 
-.btn-info.menu-toggle:hover{
-    background:#EEF2FF;
-    color:var(--primary);
-}
+        <div class="meta-item">
+            <span>👤</span>
+            <div>
+                <small>Responsable</small>
+                <strong><?= Html::encode($responsableTexto) ?></strong>
+            </div>
+        </div>
 
-/* DROPDOWN */
-.dropdown-menu{
-    display:none;
-    position:absolute;
-    min-width:190px;
-    background:white;
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:8px;
-    box-shadow:0 10px 30px rgba(15,23,42,.06);
-    z-index:999;
-}
+    </div>
 
-.dropdown-menu.show{
-    display:block;
-}
+    <div class="card-actions">
 
-/* LINKS MENU */
-.dropdown-menu a{
-    display:block;
-    padding:12px 14px;
-    border-radius:12px;
-    text-decoration:none;
-    color:var(--text);
-    font-size:14px;
-    font-weight:500;
-    transition:.15s ease;
-}
+        <?= Html::a(
+            'Ver detalle',
+            ['view', 'id' => $model->id],
+            ['class' => 'btn-soft']
+        ) ?>
 
-.dropdown-menu a:hover{
-    background:#EEF2FF;
-    color:var(--primary);
-}
+        <?php if(
+            !Yii::$app->user->isGuest &&
+            Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN
+        ): ?>
 
-/* RESPONSIVE */
-@media(max-width:768px){
 
-.laboratorios-index{
-    padding:20px;
-}
 
-.laboratorios-index h1{
-    font-size:28px;
-}
+        <?php endif; ?>
 
-.grid-view thead th,
-.grid-view tbody td{
-    padding:16px;
-    font-size:13px;
-}
+    </div>
 
-}
-</style>
+</article>
 
-<!-- Script para el menú desplegable -->
+<?php endforeach; ?>
+
+</section>
+
+<?php Pjax::end(); ?>
+
+</div>
+
+<div id="floatingMenu" class="floating-menu"></div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const menuButtons = document.querySelectorAll('.menu-toggle');
+document.addEventListener('DOMContentLoaded', initPremium);
+document.addEventListener('pjax:end', initPremium);
 
-        menuButtons.forEach(function (button) {
-            button.addEventListener('click', function () {
-                const id = button.getAttribute('data-id');
-                const menuContainer = document.getElementById('menu-container');
+function initPremium(){
+initMenus();
+initReveal();
+}
 
-                // Cerrar cualquier menú abierto previamente
-                const openMenus = document.querySelectorAll('.dropdown-menu.show');
-                openMenus.forEach(function (menu) {
-                    menu.classList.remove('show');
-                });
+function initReveal(){
 
-                // Crear el contenido del menú
-                const menu = document.createElement('div');
-                menu.classList.add('dropdown-menu');
-                menu.setAttribute('id', 'menu-' + id);
+const items = document.querySelectorAll('.reveal');
 
-                menu.innerHTML = `
-                    <a href="<?= Url::to(['laboratorios/view', 'id' => '']) ?>${id}">Ver</a>
-                    <a href="<?= Url::to(['laboratorios/update', 'id' => '']) ?>${id}">Editar</a>
-                    <a href="javascript:void(0);" onclick="confirmDelete(${id})">Eliminar</a>
-                `;
+const io = new IntersectionObserver(entries => {
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.classList.add('show');
+}
+});
+},{threshold:.12});
 
-                // Insertar el menú en el contenedor
-                menuContainer.appendChild(menu);
+items.forEach(el=>io.observe(el));
+}
 
-                // Mostrar el menú desplegable
-                menu.classList.add('show');
+function initMenus(){
 
-                // Posicionar el menú debajo del botón
-                const buttonRect = button.getBoundingClientRect();
-                menu.style.top = `${buttonRect.bottom + window.scrollY + 5}px`;
-                menu.style.left = `${buttonRect.left}px`;
-            });
-        });
+const menu = document.getElementById('floatingMenu');
+const buttons = document.querySelectorAll('.menu-btn');
 
-        // Cerrar el menú al hacer clic fuera
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.menu-toggle')) {
-                const openMenus = document.querySelectorAll('.dropdown-menu.show');
-                openMenus.forEach(function (menu) {
-                    menu.classList.remove('show');
-                });
-            }
-        });
-    });
+buttons.forEach(btn=>{
 
-    // Función de confirmación de eliminación
-    function confirmDelete(id) {
-        if (confirm("¿Estás seguro de eliminar este laboratorio?")) {
-            // Realiza la eliminación con el método POST
-            window.location.href = "<?= Url::to(['laboratorios/delete', 'id' => '']) ?>" + id;
-        }
-    }
+btn.onclick = function(e){
+
+e.stopPropagation();
+
+const id = this.dataset.id;
+
+menu.innerHTML = `
+<a href="<?= Url::to(['view']) ?>?id=${id}">Ver</a>
+<a href="<?= Url::to(['update']) ?>?id=${id}">Editar</a>
+<button onclick="removeItem(${id})">Eliminar</button>
+`;
+
+const r = this.getBoundingClientRect();
+
+let left = r.left - 130;
+let top  = r.bottom + 10;
+
+if(window.innerWidth < 768){
+left = 16;
+top = window.innerHeight - 220;
+menu.style.width = (window.innerWidth - 32)+'px';
+}else{
+menu.style.width = '190px';
+}
+
+menu.style.left = left + 'px';
+menu.style.top = top + 'px';
+
+menu.classList.add('show');
+}
+});
+
+document.onclick = closeMenu;
+window.onscroll = closeMenu;
+window.onresize = closeMenu;
+
+function closeMenu(){
+menu.classList.remove('show');
+}
+}
+function removeItem(id){
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?= Url::to(['delete']) ?>?id=' + id;
+
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = yii.getCsrfParam();
+    csrf.value = yii.getCsrfToken();
+
+    form.appendChild(csrf);
+    document.body.appendChild(form);
+
+    form.submit();
+}
 </script>

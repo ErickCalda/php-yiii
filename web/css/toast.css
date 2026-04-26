@@ -1,0 +1,108 @@
+
+/* =========================
+   TOAST CONTAINER
+========================= */
+
+#toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    z-index: 99999;
+
+    min-width: 280px;
+    max-width: 380px;
+
+    padding: 12px 14px;
+
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+
+    transition: all 0.25s ease;
+}
+
+/* =========================
+   SHOW STATE
+========================= */
+
+#toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#toast-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+#toast-message {
+    font-size: 14px;
+    color: #0F172A;
+    font-weight: 500;
+}
+
+/* =========================
+   TIPOS (ACENTO LATERAL SUAVE)
+========================= */
+
+#toast.success {
+    border-left: 4px solid #22C55E;
+}
+
+#toast.error {
+    border-left: 4px solid #EF4444;
+}
+
+#toast.warning {
+    border-left: 4px solid #F59E0B;
+}
+
+#toast.info {
+    border-left: 4px solid #6366F1;
+}
+
+/* =========================
+   MICRO INTERACCIONES
+========================= */
+
+#toast:hover {
+    transform: translateY(0) scale(1.02);
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.18);
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+    #toast {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: none;
+    }
+}

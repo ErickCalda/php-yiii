@@ -26,6 +26,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <title><?= Html::encode($this->title) ?></title>
      <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/main.css">
       <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/bitacora.css">
+         <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/laboratorio.css">
+     <link rel="stylesheet" href="<?= Yii::getAlias('@web') ?>/css/toast.css">
      <!-- Agregar Font Awesome -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
  
@@ -260,6 +262,20 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position'
 <?php $this->endBody() ?>
 
  <div id="cursor-shadow"></div>
+
+ <div id="toast" class="toast hidden">
+    <div class="toast-content">
+        <span id="toast-icon">⚠️</span>
+        <span id="toast-message"></span>
+    </div>
+</div>
+
+
+<script>
+    window.toastFlash = <?= json_encode(Yii::$app->session->getFlash('toast', null)) ?>;
+</script>
+
+<script src="<?= Yii::getAlias('@web') ?>/js/toast.js"></script>
 </body>
 </html>
 <?php $this->endPage() ?>

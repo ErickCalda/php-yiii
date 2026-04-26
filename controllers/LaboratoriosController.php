@@ -2,25 +2,26 @@
 
 namespace app\controllers;
 
-use Yii; // 👈 ESTO ES LO QUE TE FALTA
-use app\models\Laboratorios;
-use app\models\LaboratoriosSearch;
+use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\helpers\ArrayHelper;
+
+use app\models\Laboratorios;
+use app\models\LaboratoriosSearch;
+use app\models\CatTiposLaboratorio;
+use app\models\CatEstadosLaboratorio;
+use app\models\Ubicaciones;
 use app\models\Usuarios;
 
-/**
- * LaboratoriosController implements the CRUD actions for Laboratorios model.
- */
 class LaboratoriosController extends Controller
 {
     /**
-     * @inheritDoc
+     * Behaviors
      */
-   
-public function behaviors()
+    public function behaviors()
     {
         return [
             'verbs' => [
@@ -29,6 +30,7 @@ public function behaviors()
                     'delete' => ['POST'],
                 ],
             ],
+
             'access' => [
                 'class' => AccessControl::class,
                 'only' => ['create', 'update', 'delete'],
@@ -36,9 +38,9 @@ public function behaviors()
                     [
                         'allow' => true,
                         'roles' => ['@'],
-                        'matchCallback' => function ($rule, $action) {
+                        'matchCallback' => function () {
                             return !Yii::$app->user->isGuest
-                                && Yii::$app->user->identity->rol_id == \app\models\Usuarios::ROL_ADMIN;
+                                && Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
                         },
                     ],
                 ],
@@ -47,26 +49,21 @@ public function behaviors()
     }
 
     /**
-     * Lists all Laboratorios models.
-     *
-     * @return string
+     * Lista
      */
     public function actionIndex()
     {
         $searchModel = new LaboratoriosSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
 
     /**
-     * Displays a single Laboratorios model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
+     * Ver detalle
      */
     public function actionView($id)
     {
@@ -76,86 +73,191 @@ public function behaviors()
     }
 
     /**
-     * Creates a new Laboratorios model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
-        public function actionCreate()
-        {
-            $model = new Laboratorios();
+     * Crear
+    */
 
-            $usuarios = \yii\helpers\ArrayHelper::map(
-                \app\models\Usuarios::find()->all(),
-                'id',
-                'nombre'
-            );
 
-            if ($this->request->isPost) {
-                if ($model->load($this->request->post()) && $model->save()) {
-                    return $this->redirect(['view', 'id' => $model->id]);
-                }
-            } else {
-                $model->loadDefaultValues();
-            }
+public function actionCreate()
+{
+    $model = new Laboratorios();
 
-            return $this->render('create', [
-                'model' => $model,
-                'usuarios' => $usuarios, // 🔴 ESTO ES OBLIGATORIO
-            ]);
-        }
-    /**
-     * Updates an existing Laboratorios model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    $tipos = ArrayHelper::map(CatTiposLaboratorio::find()->all(), 'id', 'nombre');
+
+    $estados = ArrayHelper::map(CatEstadosLaboratorio::find()->all(), 'id', 'nombre');
+
+    $ubicaciones = ArrayHelper::map(
+        Ubicaciones::find()->all(),
+        'id',
+        fn($u) => $u->edificio . ' - ' . $u->aula
+    );
+
+    $responsables = $this->getResponsables();
+
+    if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+        Yii::$app->session->setFlash('toast', [
+            'type' => 'success',
+            'message' => 'Laboratorio creado correctamente.'
+        ]);
+
+        return $this->redirect(['view', 'id' => $model->id]);
+    }
+
+    return $this->render('create', compact(
+        'model',
+        'tipos',
+        'estados',
+        'ubicaciones',
+        'responsables'
+    ));
+}
+
 public function actionUpdate($id)
 {
     $model = $this->findModel($id);
 
-    $usuarios = \yii\helpers\ArrayHelper::map(
-        \app\models\Usuarios::find()->all(),
+    $tipos = ArrayHelper::map(CatTiposLaboratorio::find()->all(), 'id', 'nombre');
+
+    $estados = ArrayHelper::map(CatEstadosLaboratorio::find()->all(), 'id', 'nombre');
+
+    $ubicaciones = ArrayHelper::map(
+        Ubicaciones::find()->all(),
         'id',
-        'nombre'
+        fn($u) => $u->edificio . ' - ' . $u->aula
     );
 
-    if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
+    $responsables = $this->getResponsables();
+
+    if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+        Yii::$app->session->setFlash('toast', [
+            'type' => 'success',
+            'message' => 'Laboratorio actualizado correctamente.'
+        ]);
+
         return $this->redirect(['view', 'id' => $model->id]);
     }
 
-    return $this->render('update', [
-        'model' => $model,
-        'usuarios' => $usuarios, //  IMPORTANTE
-    ]);
+    return $this->render('update', compact(
+        'model',
+        'tipos',
+        'estados',
+        'ubicaciones',
+        'responsables'
+    ));
 }
     /**
-     * Deletes an existing Laboratorios model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Eliminar
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+
+        if ($model->getEquipos()->exists()) {
+
+            Yii::$app->session->setFlash('toast', [
+                'type' => 'error',
+                'message' => 'No se puede eliminar este laboratorio porque tiene equipos registrados.'
+            ]);
+
+            return $this->redirect(['index']);
+        }
+
+        $model->delete();
+
+        Yii::$app->session->setFlash('toast', [
+            'type' => 'success',
+            'message' => 'Laboratorio eliminado correctamente.'
+        ]);
 
         return $this->redirect(['index']);
     }
 
     /**
-     * Finds the Laboratorios model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Laboratorios the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
+     * Buscar modelo
      */
     protected function findModel($id)
     {
-        if (($model = Laboratorios::findOne(['id' => $id])) !== null) {
+        if (($model = Laboratorios::find()
+            ->completos()
+            ->andWhere(['laboratorios.id' => $id])
+            ->one()) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+        throw new NotFoundHttpException('El laboratorio no existe.');
     }
+
+    /**
+     * Combo tipos
+     */
+    protected function getTipos()
+    {
+        return ArrayHelper::map(
+            CatTiposLaboratorio::find()
+                ->where(['activo' => 1])
+                ->orderBy('nombre')
+                ->all(),
+            'id',
+            'nombre'
+        );
+    }
+
+    /**
+     * Combo estados
+     */
+    protected function getEstados()
+    {
+        return ArrayHelper::map(
+            CatEstadosLaboratorio::find()
+                ->where(['activo' => 1])
+                ->orderBy('nombre')
+                ->all(),
+            'id',
+            'nombre'
+        );
+    }
+
+    /**
+     * Combo ubicaciones
+     */
+    protected function getUbicaciones()
+    {
+        $rows = Ubicaciones::find()
+            ->orderBy(['edificio' => SORT_ASC, 'aula' => SORT_ASC])
+            ->all();
+
+        $data = [];
+
+        foreach ($rows as $row) {
+            $data[$row->id] =
+                $row->edificio . ' / ' .
+                $row->bloque . ' / ' .
+                $row->piso . ' / ' .
+                $row->aula;
+        }
+
+        return $data;
+    }
+
+
+
+private function getResponsables()
+{
+    return ArrayHelper::map(
+        Usuarios::find()
+            ->where([
+                'estado' => 'activo',
+                'rol_id' => 3
+            ])
+            ->orderBy(['nombre' => SORT_ASC])
+            ->all(),
+        'id',
+        function ($u) {
+            return trim(($u->nombre ?? '') . ' ' . ($u->apellido ?? ''));
+        }
+    );
 }
+
+
+} 

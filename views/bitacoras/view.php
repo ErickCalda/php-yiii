@@ -6,21 +6,22 @@ use yii\widgets\DetailView;
 /** @var yii\web\View $this */
 /** @var app\models\Bitacoras $model */
 
-$this->title = $model->id;
-$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Bitacoras'), 'url' => ['index']];
+$this->title = $model->titulo;
+$this->params['breadcrumbs'][] = ['label' => 'Bitácoras', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
+
 <div class="bitacoras-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a(Yii::t('app', 'Update'), ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-        <?= Html::a(Yii::t('app', 'Delete'), ['delete', 'id' => $model->id], [
+        <?= Html::a('Actualizar', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Eliminar', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [
-                'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
+                'confirm' => '¿Seguro que deseas eliminar este registro?',
                 'method' => 'post',
             ],
         ]) ?>
@@ -29,11 +30,56 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
+
             'id',
-            'reserva_id',
-            'descripcion:ntext',
-            'archivo_adjunto',
-            'fecha_registro',
+
+            [
+                'label' => 'Título',
+                'value' => $model->titulo,
+            ],
+
+            [
+                'label' => 'Laboratorio',
+                'value' => $model->laboratorio->nombre ?? 'N/A',
+            ],
+
+            [
+                'label' => 'Usuario',
+                'value' => $model->usuario->nombre . ' ' . $model->usuario->apellido ?? 'N/A',
+            ],
+
+            [
+                'label' => 'Tipo de Evento',
+                'value' => $model->tipoEvento->nombre ?? 'N/A',
+            ],
+
+            [
+                'label' => 'Estado',
+                'value' => $model->estado->nombre ?? 'N/A',
+            ],
+
+            [
+                'attribute' => 'descripcion',
+                'format' => 'ntext',
+            ],
+
+            [
+                'label' => 'Fecha del Evento',
+                'attribute' => 'fecha_evento',
+                'format' => 'datetime',
+            ],
+
+            [
+                'label' => 'Creado',
+                'attribute' => 'fecha_creacion',
+                'format' => 'datetime',
+            ],
+
+            [
+                'label' => 'Actualizado',
+                'attribute' => 'fecha_actualizacion',
+                'format' => 'datetime',
+            ],
         ],
     ]) ?>
 

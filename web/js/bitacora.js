@@ -1,6 +1,3 @@
-
-
-
 let observer = null;
 let topBtn = null;
 let bitacoraInitialized = false;
@@ -12,9 +9,7 @@ let bitacoraInitialized = false;
     =============================== */
     function initBitacora() {
 
-        // 🔥 evitar re-init duplicado dentro del mismo ciclo
         resetBitacora();
-
         forceViewSync();
         initViews();
         initCards();
@@ -23,30 +18,27 @@ let bitacoraInitialized = false;
         initModal();
     }
 
-
     /* ===============================
-       RESET TOTAL SEGURO
+       RESET SEGURO
     =============================== */
     function resetBitacora() {
 
         bitacoraInitialized = false;
 
-        // 🔥 limpiar observer anterior
         if (observer) {
             observer.disconnect();
             observer = null;
         }
 
-        // 🔥 limpiar animaciones previas
-        document.querySelectorAll('.log-card').forEach(el => {
-            el.classList.remove('show-card');
-        });
+        document.querySelectorAll('.log-card')
+            .forEach(el => el.classList.remove('show-card'));
     }
 
-
     /* ===============================
-       FORZAR VISTA (TIMELINE / TABLE)
+       FORZAR VISTA
     =============================== */
+
+
     function forceViewSync() {
 
         const saved = localStorage.getItem('bitacoraView') || 'timeline';
@@ -56,7 +48,6 @@ let bitacoraInitialized = false;
 
         if (!timeline || !table) return;
 
-        // 🔥 IMPORTANTE: evitar doble render visual
         timeline.style.display = 'none';
         table.style.display = 'none';
 
@@ -67,143 +58,123 @@ let bitacoraInitialized = false;
         }
     }
 
-
     /* ===============================
-       VISTAS (TIMELINE / TABLE)
+       VISTAS
     =============================== */
-    function initViews() {
+function initViews() {
 
-        const btnTimeline = document.getElementById('btnTimeline');
-        const btnTable = document.getElementById('btnTable');
+    const btnTimeline = document.getElementById('btnTimeline');
+    const btnTable = document.getElementById('btnTable');
 
-        const timeline = document.getElementById('timelineView');
-        const table = document.getElementById('tableView');
+    const timeline = document.getElementById('timelineView');
+    const table = document.getElementById('tableView');
 
-        if (!btnTimeline || !btnTable || !timeline || !table) return;
+    if (!btnTimeline || !btnTable || !timeline || !table) return;
 
-        function activate(btn) {
-            document.querySelectorAll('.view-btn')
-                .forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    function setView(view) {
+
+        const isTimeline = view === 'timeline';
+
+        timeline.style.display = isTimeline ? 'block' : 'none';
+        table.style.display = isTimeline ? 'none' : 'block';
+
+        document.querySelectorAll('.view-btn')
+            .forEach(b => b.classList.remove('active'));
+
+        (isTimeline ? btnTimeline : btnTable).classList.add('active');
+
+        localStorage.setItem('bitacoraView', view);
+
+        if (isTimeline) {
+            requestAnimationFrame(initCards);
         }
-
-        function showTimeline() {
-
-            table.style.display = 'none';
-            timeline.style.display = 'block';
-
-            activate(btnTimeline);
-            localStorage.setItem('bitacoraView', 'timeline');
-
-            requestAnimationFrame(() => initCards());
-        }
-
-        function showTable() {
-
-            timeline.style.display = 'none';
-            table.style.display = 'block';
-
-            activate(btnTable);
-            localStorage.setItem('bitacoraView', 'table');
-        }
-
-        btnTimeline.onclick = showTimeline;
-        btnTable.onclick = showTable;
-
-        const saved = localStorage.getItem('bitacoraView');
-
-        if (saved === 'table') showTable();
-        else showTimeline();
-
-
-        /* 🔥 BLOQUEAR TECLAS MIENTRAS ESCRIBE */
-        document.addEventListener('keydown', function (e) {
-
-            const isTyping = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
-
-            if (isTyping) return;
-
-            if (e.key === 't') showTimeline();
-            if (e.key === 'g') showTable();
-
-            if (e.key === '/') {
-                e.preventDefault();
-                document.querySelector('.search-input')?.focus();
-            }
-
-            if (e.key === 'Escape') closeModal();
-        });
     }
 
+    btnTimeline.addEventListener('click', () => setView('timeline'));
+    btnTable.addEventListener('click', () => setView('table'));
 
+    // estado inicial
+    const saved = localStorage.getItem('bitacoraView') || 'timeline';
+    setView(saved);
+
+    document.addEventListener('keydown', function (e) {
+
+        const typing = ['INPUT', 'TEXTAREA']
+            .includes(document.activeElement.tagName);
+
+        if (typing) return;
+
+        if (e.key === 't') setView('timeline');
+        if (e.key === 'g') setView('table');
+
+        if (e.key === '/') {
+            e.preventDefault();
+            document.querySelector('.search-input')?.focus();
+        }
+
+        if (e.key === 'Escape') closeModal();
+    });
+}
     /* ===============================
-       CARDS (SIN DUPLICADOS)
+       ANIMACIÓN CARDS
     =============================== */
     function initCards() {
 
-        if (observer) {
-            observer.disconnect();
-            observer = null;
-        }
+        if (observer) observer.disconnect();
 
         const cards = document.querySelectorAll('.log-card');
 
         observer = new IntersectionObserver(entries => {
-
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('show-card');
                 }
             });
-
         }, { threshold: 0.08 });
 
         cards.forEach(card => {
-
             card.classList.remove('show-card');
             observer.observe(card);
-
         });
     }
 
-
     /* ===============================
-       RIPPLE
+       RIPPLE EFFECT
     =============================== */
     function initRipple() {
 
-        document.querySelectorAll('.view-btn,.btn-primary').forEach(btn => {
+        document.querySelectorAll('.view-btn,.btn-primary')
+            .forEach(btn => {
 
-            if (btn.dataset.rippleReady) return;
-            btn.dataset.rippleReady = "1";
+                if (btn.dataset.rippleReady) return;
+                btn.dataset.rippleReady = "1";
 
-            btn.addEventListener('click', function (e) {
+                btn.addEventListener('click', function (e) {
 
-                const ripple = document.createElement('span');
+                    const ripple = document.createElement('span');
 
-                ripple.style.position = 'absolute';
-                ripple.style.width = '10px';
-                ripple.style.height = '10px';
-                ripple.style.borderRadius = '50%';
-                ripple.style.left = (e.offsetX - 5) + 'px';
-                ripple.style.top = (e.offsetY - 5) + 'px';
-                ripple.style.background = 'rgba(255,255,255,.45)';
-                ripple.style.transform = 'scale(0)';
-                ripple.style.transition = '.55s ease';
-                ripple.style.pointerEvents = 'none';
+                    ripple.style.position = 'absolute';
+                    ripple.style.width = '10px';
+                    ripple.style.height = '10px';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.left = (e.offsetX - 5) + 'px';
+                    ripple.style.top = (e.offsetY - 5) + 'px';
+                    ripple.style.background = 'rgba(255,255,255,.4)';
+                    ripple.style.transform = 'scale(0)';
+                    ripple.style.transition = '.5s ease';
+                    ripple.style.pointerEvents = 'none';
 
-                btn.appendChild(ripple);
+                    btn.appendChild(ripple);
 
-                requestAnimationFrame(() => {
-                    ripple.style.transform = 'scale(18)';
-                    ripple.style.opacity = '0';
+                    requestAnimationFrame(() => {
+                        ripple.style.transform = 'scale(15)';
+                        ripple.style.opacity = '0';
+                    });
+
+                    setTimeout(() => ripple.remove(), 500);
                 });
-
-                setTimeout(() => ripple.remove(), 550);
             });
-        });
     }
-
 
     /* ===============================
        TOP BUTTON
@@ -222,20 +193,13 @@ let bitacoraInitialized = false;
 
         document.body.appendChild(topBtn);
 
-        window.addEventListener('scroll', function () {
-
-            if (window.scrollY > 280) {
-                topBtn.classList.add('show-top');
-            } else {
-                topBtn.classList.remove('show-top');
-            }
-
+        window.addEventListener('scroll', () => {
+            topBtn.classList.toggle('show-top', window.scrollY > 280);
         });
     }
 
-
     /* ===============================
-       MODAL
+       MODAL INIT
     =============================== */
     function initModal() {
 
@@ -249,7 +213,9 @@ let bitacoraInitialized = false;
         backdrop?.addEventListener('click', closeModal);
     }
 
-
+    /* ===============================
+       OPEN MODAL
+    =============================== */
     function openModal(url) {
 
         const modal = document.getElementById('crudModal');
@@ -258,15 +224,15 @@ let bitacoraInitialized = false;
         fetch(url)
             .then(r => r.text())
             .then(html => {
-
                 content.innerHTML = html;
                 modal.classList.add('show');
-
                 bindAjaxForm();
             });
     }
 
-
+    /* ===============================
+       CLOSE MODAL
+    =============================== */
     function closeModal() {
 
         const modal = document.getElementById('crudModal');
@@ -279,9 +245,8 @@ let bitacoraInitialized = false;
         }, 200);
     }
 
-
     /* ===============================
-       AJAX FORM (SIN PJAX PROBLEMS)
+       AJAX FORM FIX
     =============================== */
     function bindAjaxForm() {
 
@@ -299,25 +264,21 @@ let bitacoraInitialized = false;
             .then(r => r.text())
             .then(res => {
 
+                // ✔ SUCCESS SIMPLE (tu controller devuelve "success")
                 if (res.includes('success')) {
 
                     closeModal();
-
-                    // 🔥 RECARGA LIMPIA SIN DUPLICAR
                     location.reload();
-
-                } else {
-                    document.getElementById('crudContent').innerHTML = res;
-                    bindAjaxForm();
+                    return;
                 }
 
+                // si no es success → recarga form con errores
+                document.getElementById('crudContent').innerHTML = res;
+                bindAjaxForm();
             })
-            .catch(() => {
-                showToast('Ocurrió un error');
-            });
+            .catch(() => showToast('Error al guardar'));
         });
     }
-
 
     /* ===============================
        TOAST
@@ -338,9 +299,8 @@ let bitacoraInitialized = false;
         }, 2200);
     }
 
-
     /* ===============================
-       EVENTS GLOBALES
+       EVENTOS GLOBALES (FIX REAL)
     =============================== */
     document.addEventListener('click', function (e) {
 
@@ -350,15 +310,21 @@ let bitacoraInitialized = false;
         if (createBtn) {
             e.preventDefault();
             openModal('/index.php?r=bitacoras/create');
+            return;
         }
 
         if (editBtn) {
             e.preventDefault();
-            openModal(editBtn.href);
+            openModal(editBtn.getAttribute('href'));
+            return;
         }
-
     });
 
+    /* ===============================
+       EXPOSICIÓN GLOBAL (IMPORTANTE)
+    =============================== */
+    window.openModal = openModal;
+    window.closeModal = closeModal;
 
     /* ===============================
        INIT
@@ -366,10 +332,3 @@ let bitacoraInitialized = false;
     document.addEventListener('DOMContentLoaded', initBitacora);
 
 })();
-
-
-
-
-
-
-

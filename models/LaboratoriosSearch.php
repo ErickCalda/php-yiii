@@ -4,69 +4,129 @@ namespace app\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Laboratorios;
 
-/**
- * LaboratoriosSearch represents the model behind the search form of `app\models\Laboratorios`.
- */
 class LaboratoriosSearch extends Laboratorios
 {
-    /**
-     * {@inheritdoc}
-     */
+    public $tipo;
+    public $estado;
+    public $ubicacion_texto;
+    public $responsable; // 🔥 NUEVO
+
     public function rules()
     {
         return [
-            [['id', 'responsable_id', 'capacidad'], 'integer'],
-            [['nombre', 'ubicacion', 'descripcion'], 'safe'],
+            [['id', 'tipo_id', 'estado_id', 'ubicacion_id', 'capacidad', 'responsable_id'], 'integer'],
+
+            [
+                [
+                    'codigo',
+                    'nombre',
+                    'descripcion',
+                    'tipo',
+                    'estado',
+                    'ubicacion_texto',
+                    'responsable', // 🔥 NUEVO
+                    'fecha_creacion',
+                    'fecha_actualizacion'
+                ],
+                'safe'
+            ],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function scenarios()
     {
-        // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
 
-    /**
-     * Creates data provider instance with search query applied
-     *
-     * @param array $params
-     * @param string|null $formName Form name to be used into `->load()` method.
-     *
-     * @return ActiveDataProvider
-     */
     public function search($params, $formName = null)
     {
-        $query = Laboratorios::find();
-
-        // add conditions that should always apply here
+        $query = Laboratorios::find()
+            ->alias('l')
+            ->joinWith(['tipo t', 'estado e', 'ubicacion u', 'responsable r']); // 🔥 NUEVO JOIN
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+            'sort' => [
+                'defaultOrder' => [
+                    'id' => SORT_DESC,
+                ],
+                'attributes' => [
+                    'id',
+                    'codigo',
+                    'nombre',
+                    'capacidad',
+                    'fecha_creacion',
+
+                    'tipo' => [
+                        'asc' => ['t.nombre' => SORT_ASC],
+                        'desc' => ['t.nombre' => SORT_DESC],
+                    ],
+
+                    'estado' => [
+                        'asc' => ['e.nombre' => SORT_ASC],
+                        'desc' => ['e.nombre' => SORT_DESC],
+                    ],
+
+                    'ubicacion_texto' => [
+                        'asc' => ['u.edificio' => SORT_ASC],
+                        'desc' => ['u.edificio' => SORT_DESC],
+                    ],
+
+                    // 🔥 NUEVO: ordenar por responsable
+                    'responsable' => [
+                        'asc' => ['r.nombre' => SORT_ASC],
+                        'desc' => ['r.nombre' => SORT_DESC],
+                    ],
+                ],
+            ],
         ]);
 
         $this->load($params, $formName);
 
         if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
             return $dataProvider;
         }
 
-        // grid filtering conditions
+        /**
+         * Exact filters
+         */
         $query->andFilterWhere([
-            'id' => $this->id,
-            'responsable_id' => $this->responsable_id,
-            'capacidad' => $this->capacidad,
+            'l.id' => $this->id,
+            'l.tipo_id' => $this->tipo_id,
+            'l.estado_id' => $this->estado_id,
+            'l.ubicacion_id' => $this->ubicacion_id,
+            'l.capacidad' => $this->capacidad,
+            'l.responsable_id' => $this->responsable_id, // 🔥 NUEVO
         ]);
 
-        $query->andFilterWhere(['like', 'nombre', $this->nombre])
-            ->andFilterWhere(['like', 'ubicacion', $this->ubicacion])
-            ->andFilterWhere(['like', 'descripcion', $this->descripcion]);
+        /**
+         * Text filters
+         */
+        $query->andFilterWhere(['like', 'l.codigo', $this->codigo])
+            ->andFilterWhere(['like', 'l.nombre', $this->nombre])
+            ->andFilterWhere(['like', 'l.descripcion', $this->descripcion])
+
+            ->andFilterWhere(['like', 't.nombre', $this->tipo])
+            ->andFilterWhere(['like', 'e.nombre', $this->estado])
+
+            // 🔥 NUEVO: filtro por responsable (nombre/apellido)
+            ->andFilterWhere([
+                'or',
+                ['like', 'r.nombre', $this->responsable],
+                ['like', 'r.apellido', $this->responsable],
+            ])
+
+            ->andFilterWhere([
+                'or',
+                ['like', 'u.edificio', $this->ubicacion_texto],
+                ['like', 'u.bloque', $this->ubicacion_texto],
+                ['like', 'u.piso', $this->ubicacion_texto],
+                ['like', 'u.aula', $this->ubicacion_texto],
+            ]);
 
         return $dataProvider;
     }

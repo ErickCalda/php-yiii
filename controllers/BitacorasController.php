@@ -4,76 +4,53 @@ namespace app\controllers;
 
 use app\models\Bitacoras;
 use app\models\BitacorasSearch;
-use yii\web\Controller;
-use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
-use yii\filters\AccessControl;
 use app\models\Usuarios;
 use Yii;
+use yii\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\filters\AccessControl;
 
-/**
- * BitacorasController implements the CRUD actions for Bitacoras model.
- */
 class BitacorasController extends Controller
 {
-    /**
-     * @inheritDoc
-     */
-   
-public function behaviors()
-{
-    return [
-
-        'access' => [
-            'class' => AccessControl::class,
-            'only' => ['create', 'update', 'delete'],
-            'denyCallback' => function () {
-
-                if (Yii::$app->request->isAjax) {
-                    throw new \yii\web\ForbiddenHttpException('Sin permiso');
-                }
-
-                return $this->redirect(['site/index']);
-            },
-            'rules' => [
-                [
-                    'allow' => true,
-                    'roles' => ['@'],
-                    'matchCallback' => function () {
-
-                        return (int) Yii::$app->user->identity->rol_id === (int) Usuarios::ROL_ADMIN;
-                    }
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['create', 'update', 'delete'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function () {
+                            return (int) Yii::$app->user->identity->rol_id === (int) Usuarios::ROL_ADMIN;
+                        }
+                    ],
                 ],
+                'denyCallback' => function () {
+                    throw new \yii\web\ForbiddenHttpException('Sin permiso');
+                },
             ],
-        ],
+        ];
+    }
 
-    ];
-}
-    /**
-     * Lists all Bitacoras models.
-     *
-     * @return string
-     */
+    /* =========================
+     * LISTADO
+     * ========================= */
     public function actionIndex()
     {
         $searchModel = new BitacorasSearch();
-        $dataProvider = $searchModel->search($this->request->queryParams);
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
-
-
     }
 
-    /**
-     * Displays a single Bitacoras model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    /* =========================
+     * VER
+     * ========================= */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -81,88 +58,88 @@ public function behaviors()
         ]);
     }
 
-    /**
-     * Creates a new Bitacoras model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
-public function actionCreate()
-{
-    $model = new Bitacoras();
+    /* =========================
+     * CREAR (AJAX MODAL)
+     * ========================= */
+    public function actionCreate()
+    {
+        $model = new Bitacoras();
 
-    if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        return 'success';
+        if ($model->load(Yii::$app->request->post())) {
+
+            // ⚡ guardar directamente (usuario y estado se manejan en beforeSave)
+            if ($model->save()) {
+                return 'success';
+            }
+
+            // 🔥 devolver errores reales si falla
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return $model->errors;
+        }
+
+        $this->layout = false;
+
+        return $this->renderAjax('_form', [
+            'model' => $model,
+        ]);
     }
 
-    $this->layout = false;
+    /* =========================
+     * ACTUALIZAR
+     * ========================= */
+    public function actionUpdate($id)
+    {
+        $model = $this->findModel($id);
 
-    return $this->renderAjax('_form', [
-        'model' => $model,
-    ]);
-}
+        if ($model->load(Yii::$app->request->post())) {
 
-    /**
-     * Updates an existing Bitacoras model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
-public function actionUpdate($id)
-{
-    $model = $this->findModel($id);
+            if ($model->save()) {
+                return 'success';
+            }
 
-    if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        return 'success';
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return $model->errors;
+        }
+
+        $this->layout = false;
+
+        return $this->renderAjax('_form', [
+            'model' => $model,
+        ]);
     }
 
-    $this->layout = false;
-
-    return $this->renderAjax('_form', [
-        'model' => $model,
-    ]);
-}
-    /**
-     * Deletes an existing Bitacoras model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    /* =========================
+     * ELIMINAR
+     * ========================= */
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the Bitacoras model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return Bitacoras the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
+    /* =========================
+     * FIND MODEL
+     * ========================= */
     protected function findModel($id)
     {
-        if (($model = Bitacoras::findOne(['id' => $id])) !== null) {
+        if (($model = Bitacoras::findOne($id)) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
+        throw new NotFoundHttpException('La página no existe.');
     }
 
-
-
-
+    /* =========================
+     * TABLA VIEW (OPCIONAL)
+     * ========================= */
     public function actionTable()
-{
-    $searchModel = new BitacorasSearch();
-    $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+    {
+        $searchModel = new BitacorasSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-    return $this->render('table', [
-        'searchModel' => $searchModel,
-        'dataProvider' => $dataProvider,
-    ]);
-}
+        return $this->render('table', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
 }

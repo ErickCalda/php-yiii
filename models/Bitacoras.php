@@ -1,90 +1,116 @@
 <?php
+
 namespace app\models;
 
 use Yii;
 
-/**
- * This is the model class for table "bitacoras".
- *
- * @property int $id
- * @property int $reserva_id
- * @property string $descripcion
- * @property string|null $archivo_adjunto
- * @property string|null $fecha_registro
- *
- * @property Reservas $reserva
- */
 class Bitacoras extends \yii\db\ActiveRecord
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function tableName()
     {
         return 'bitacoras';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function rules()
     {
         return [
-            [['archivo_adjunto'], 'default', 'value' => null],
-            [['reserva_id', 'descripcion'], 'required'],
-            [['reserva_id'], 'integer'],
+            [
+                [
+                    'reserva_id',
+                    'laboratorio_id',
+                    'tipo_evento_id',
+                    'titulo',
+                    'descripcion'
+                ],
+                'required'
+            ],
+
+            [
+                [
+                    'reserva_id',
+                    'laboratorio_id',
+                    'usuario_id',
+                    'tipo_evento_id',
+                    'estado_id'
+                ],
+                'integer'
+            ],
+
             [['descripcion'], 'string'],
-            [['fecha_registro'], 'safe'],
-            [['archivo_adjunto'], 'string', 'max' => 255],
-            [['reserva_id'], 'exist', 'skipOnError' => true, 'targetClass' => Reservas::class, 'targetAttribute' => ['reserva_id' => 'id']],
+
+            // solo fechas reales del sistema
+            [
+                [
+                    'fecha_evento',
+                    'fecha_creacion',
+                    'fecha_actualizacion'
+                ],
+                'safe'
+            ],
+
+            [['titulo'], 'string', 'max' => 150],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function attributeLabels()
     {
         return [
-            'id' => Yii::t('app', 'ID'),
-            'reserva_id' => Yii::t('app', 'Reserva ID'),
-            'descripcion' => Yii::t('app', 'Descripcion'),
-            'archivo_adjunto' => Yii::t('app', 'Archivo Adjunto'),
-            'fecha_registro' => Yii::t('app', 'Fecha Registro'),
+            'reserva_id' => 'Reserva',
+            'laboratorio_id' => 'Laboratorio',
+            'tipo_evento_id' => 'Tipo de evento',
+            'estado_id' => 'Estado',
+            'titulo' => 'Título',
+            'descripcion' => 'Descripción',
+            'fecha_evento' => 'Fecha del evento',
         ];
     }
 
-    /**
-     * Gets query for [[Reserva]].
-     *
-     * @return \yii\db\ActiveQuery|ReservasQuery
-     */
+    public function beforeSave($insert)
+    {
+        if ($insert) {
+
+            // 👤 Usuario automático
+            $this->usuario_id = Yii::$app->user->id;
+
+            // 📌 Estado por defecto
+            $this->estado_id = $this->estado_id ?: 1;
+
+            // ⏱ creación automática
+            $this->fecha_creacion = date('Y-m-d H:i:s');
+        }
+
+        // ⏱ actualización automática
+        $this->fecha_actualizacion = date('Y-m-d H:i:s');
+
+        return parent::beforeSave($insert);
+    }
+
+    /* =========================
+     * RELACIONES
+     * ========================= */
+
     public function getReserva()
     {
         return $this->hasOne(Reservas::class, ['id' => 'reserva_id']);
     }
 
-    /**
-     * {@inheritdoc}
-     * @return BitacorasQuery the active query used by this AR class.
-     */
-    public static function find()
+    public function getLaboratorio()
     {
-        return new BitacorasQuery(get_called_class());
+        return $this->hasOne(Laboratorios::class, ['id' => 'laboratorio_id']);
     }
 
-    /**
-     * Automatically sets fecha_registro when creating or updating a record
-     */
-    public function beforeSave($insert)
+    public function getUsuario()
     {
-        if ($this->isNewRecord) {
-            // Si es un nuevo registro, asignar fecha de creación
-            $this->fecha_registro = date('Y-m-d H:i:s');
-        } else {
-            // Si no es nuevo, actualizar fecha de última actualización
-            $this->fecha_registro = date('Y-m-d H:i:s');
-        }
-        return parent::beforeSave($insert);
+        return $this->hasOne(Usuarios::class, ['id' => 'usuario_id']);
+    }
+
+    public function getTipoEvento()
+    {
+        return $this->hasOne(CatTiposEvento::class, ['id' => 'tipo_evento_id']);
+    }
+
+    public function getEstado()
+    {
+        return $this->hasOne(CatEstadosBitacora::class, ['id' => 'estado_id']);
     }
 }

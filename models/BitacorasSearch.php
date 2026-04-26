@@ -6,67 +6,72 @@ use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Bitacoras;
 
-/**
- * BitacorasSearch represents the model behind the search form of `app\models\Bitacoras`.
- */
 class BitacorasSearch extends Bitacoras
 {
-    /**
-     * {@inheritdoc}
-     */
     public function rules()
     {
         return [
-            [['id', 'reserva_id'], 'integer'],
-            [['descripcion', 'archivo_adjunto', 'fecha_registro'], 'safe'],
+            [
+                [
+                    'id',
+                    'reserva_id',
+                    'laboratorio_id',
+                    'usuario_id',
+                    'tipo_evento_id',
+                    'estado_id'
+                ],
+                'integer'
+            ],
+
+            [
+                [
+                    'titulo',
+                    'descripcion',
+                    'fecha_evento'
+                ],
+                'safe'
+            ],
         ];
     }
-    
 
-    /**
-     * {@inheritdoc}
-     */
     public function scenarios()
     {
-        // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
 
-    /**
-     * Creates data provider instance with search query applied
-     *
-     * @param array $params
-     * @param string|null $formName Form name to be used into `->load()` method.
-     *
-     * @return ActiveDataProvider
-     */
     public function search($params, $formName = null)
     {
         $query = Bitacoras::find();
 
-        // add conditions that should always apply here
-
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => [
+                'defaultOrder' => [
+                    'fecha_evento' => SORT_DESC
+                ]
+            ]
         ]);
 
         $this->load($params, $formName);
 
         if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
             return $dataProvider;
         }
 
-        // grid filtering conditions
+        // filtros exactos
         $query->andFilterWhere([
             'id' => $this->id,
             'reserva_id' => $this->reserva_id,
-            'fecha_registro' => $this->fecha_registro,
+            'laboratorio_id' => $this->laboratorio_id,
+            'usuario_id' => $this->usuario_id,
+            'tipo_evento_id' => $this->tipo_evento_id,
+            'estado_id' => $this->estado_id,
         ]);
 
-        $query->andFilterWhere(['like', 'descripcion', $this->descripcion])
-            ->andFilterWhere(['like', 'archivo_adjunto', $this->archivo_adjunto]);
+        // filtros tipo búsqueda (LIKE)
+        $query->andFilterWhere(['like', 'titulo', $this->titulo])
+              ->andFilterWhere(['like', 'descripcion', $this->descripcion])
+              ->andFilterWhere(['like', 'fecha_evento', $this->fecha_evento]);
 
         return $dataProvider;
     }
