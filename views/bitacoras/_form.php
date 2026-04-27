@@ -7,97 +7,132 @@ use yii\helpers\ArrayHelper;
 use app\models\Laboratorios;
 use app\models\CatTiposEvento;
 use app\models\CatEstadosBitacora;
-use app\models\Reservas;
+use app\models\ClasesProgramadas;
+
 ?>
 
 <div class="bitacoras-form">
 
 <?php $form = ActiveForm::begin([
     'id' => 'bitacoraForm',
-    'options' => ['autocomplete' => 'off']
+    'options' => [
+        'autocomplete' => 'off'
+    ]
 ]); ?>
 
-<!-- 🔹 RESERVA (FILTRADA POR USUARIO LOGUEADO) -->
-<?= $form->field($model, 'reserva_id')->dropDownList(
+<!-- CLASE PROGRAMADA (OPCIONAL) -->
+<?= $form->field($model, 'clase_programada_id')->dropDownList(
+
     ArrayHelper::map(
-        Reservas::find()
-            ->where(['usuario_id' => Yii::$app->user->id])
-            ->orderBy(['id' => SORT_DESC])
+
+        ClasesProgramadas::find()
+            ->with(['laboratorio', 'materia', 'curso'])
+            ->orderBy([
+                'dia_semana' => SORT_ASC,
+                'hora_inicio' => SORT_ASC
+            ])
             ->all(),
+
         'id',
-        function ($r) {
-            return 'Reserva #' . $r->id .
-                ' - ' . ($r->laboratorio->nombre ?? 'Sin lab') .
-                ' - ' . $r->fecha;
+
+        function ($c) {
+
+            return ucfirst($c->dia_semana)
+                . ' | '
+                . substr($c->hora_inicio, 0, 5)
+                . ' - '
+                . substr($c->hora_fin, 0, 5)
+                . ' | '
+                . ($c->laboratorio->nombre ?? 'Sin Lab')
+                . ' | '
+                . ($c->materia->nombre ?? 'Sin Materia')
+                . ' | '
+                . ($c->curso->nombre ?? 'Sin Curso');
         }
     ),
+
     [
-        'prompt' => 'Selecciona tu reserva',
+        'prompt' => 'Sin relación con clase (opcional)',
         'class' => 'form-control'
     ]
 ) ?>
 
-<!-- 🔹 LABORATORIO -->
+<!-- LABORATORIO -->
 <?= $form->field($model, 'laboratorio_id')->dropDownList(
+
     ArrayHelper::map(
-        Laboratorios::find()->all(),
+        Laboratorios::find()
+            ->orderBy('nombre')
+            ->all(),
+
         'id',
         'nombre'
     ),
+
     [
         'prompt' => 'Selecciona laboratorio',
         'class' => 'form-control'
     ]
 ) ?>
 
-<!-- 🔹 TIPO DE EVENTO -->
+<!-- TIPO DE EVENTO -->
 <?= $form->field($model, 'tipo_evento_id')->dropDownList(
+
     ArrayHelper::map(
-        CatTiposEvento::find()->all(),
+        CatTiposEvento::find()
+            ->orderBy('nombre')
+            ->all(),
+
         'id',
         'nombre'
     ),
+
     [
-        'prompt' => 'Tipo de evento',
+        'prompt' => 'Selecciona tipo de evento',
         'class' => 'form-control'
     ]
 ) ?>
 
-<!-- 🔹 ESTADO -->
+<!-- ESTADO -->
 <?= $form->field($model, 'estado_id')->dropDownList(
+
     ArrayHelper::map(
-        CatEstadosBitacora::find()->all(),
+        CatEstadosBitacora::find()
+            ->orderBy('nombre')
+            ->all(),
+
         'id',
         'nombre'
     ),
+
     [
-        'prompt' => 'Estado',
+        'prompt' => 'Selecciona estado',
         'class' => 'form-control'
     ]
 ) ?>
 
-<!-- 🔹 TÍTULO -->
+<!-- TITULO -->
 <?= $form->field($model, 'titulo')->textInput([
     'maxlength' => true,
     'class' => 'form-control',
-    'placeholder' => 'Título del evento'
+    'placeholder' => 'Ej: Equipo dañado, Clase suspendida...'
 ]) ?>
 
-<!-- 🔹 DESCRIPCIÓN -->
+<!-- DESCRIPCION -->
 <?= $form->field($model, 'descripcion')->textarea([
     'rows' => 5,
     'class' => 'form-control',
-    'placeholder' => 'Describe lo ocurrido...'
+    'placeholder' => 'Describe detalladamente lo ocurrido...'
 ]) ?>
 
-<!-- 🔹 FECHA DEL EVENTO -->
+<!-- FECHA EVENTO -->
 <?= $form->field($model, 'fecha_evento')->input('datetime-local', [
     'class' => 'form-control'
 ]) ?>
 
 <div class="form-actions">
 
-    <?= Html::submitButton('Guardar', [
+    <?= Html::submitButton('Guardar Bitácora', [
         'class' => 'btn-save'
     ]) ?>
 

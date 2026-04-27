@@ -125,26 +125,38 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         
     </li>
 
-    <!-- Reservas -->
-    <li class="nav-item mb-1">
-        <a class="nav-link  d-flex align-items-center collapsed" style="color:#6366F1;" data-bs-toggle="collapse" href="#collapseReservas" role="button">
-            <i class="bi  bi-calendar"  style="color:#6366F1;"></i><span class="link-text ms-2">Reservas</span>
-            <i class="bi  bi-chevron-down ms-auto"  style="color:#6366F1;"></i>
-        </a>
-        <ul class="collapse nav flex-column ms-3" id="collapseReservas">
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center" style="color:#6366F1;" href="<?= \yii\helpers\Url::to(['/reservas/index']) ?>">
-                    <i class="bi  bi-plus-circle"  style="color:#6366F1;"></i><span class="link-text ms-2">G.Reservas</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center"style="color:#6366F1;" href="<?= \yii\helpers\Url::to(['/reservas/horario']) ?>">
-                    <i class="bi  bi-calendar-week"  style="color:#6366F1;"></i><span class="link-text ms-2">Horario</span>
-                </a>
-            </li>
-           
-        </ul>
-    </li>
+<!-- Clases Programadas -->
+<li class="nav-item mb-1">
+    <a class="nav-link d-flex align-items-center collapsed"
+       style="color:#6366F1;"
+       data-bs-toggle="collapse"
+       href="#collapseClases"
+       role="button">
+
+        <i class="bi bi-calendar3" style="color:#6366F1;"></i>
+        <span class="link-text ms-2">Clases</span>
+        <i class="bi bi-chevron-down ms-auto" style="color:#6366F1;"></i>
+    </a>
+
+    <ul class="collapse nav flex-column ms-3" id="collapseClases">
+
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center"
+               style="color:#6366F1;"
+               href="<?= \yii\helpers\Url::to(['/clases-programadas/index']) ?>">
+
+                <i class="bi bi-journal-bookmark"
+                   style="color:#6366F1;"></i>
+
+                <span class="link-text ms-2">
+                    Gestionar
+                </span>
+            </a>
+        </li>
+
+
+    </ul>
+</li>
 
     <!-- Usuarios -->
     <li class="nav-item mb-1">

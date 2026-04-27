@@ -1,18 +1,14 @@
 <?php
 
-use app\models\Bitacoras;
 use app\models\Usuarios;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\grid\GridView;
-use yii\grid\ActionColumn;
 use yii\widgets\Pjax;
 
 $this->title = 'Bitácora';
 $this->params['breadcrumbs'][] = $this->title;
 
-$isAdmin = !Yii::$app->user->isGuest
-    && Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
+$isAdmin = !Yii::$app->user->isGuest &&
+    Yii::$app->user->identity->rol_id == Usuarios::ROL_ADMIN;
 ?>
 
 <div class="bitacora-page">
@@ -22,16 +18,16 @@ $isAdmin = !Yii::$app->user->isGuest
 
     <div>
         <h1>Bitácora</h1>
-        <p>Actividad reciente y trazabilidad operativa del sistema.</p>
+        <p>Actividad reciente y trazabilidad operativa del laboratorio.</p>
     </div>
 
     <div class="head-actions">
 
-
-      
-
         <?php if ($isAdmin): ?>
-            <button type="button" class="btn-primary" id="openCreateModal">
+            <button
+                type="button"
+                class="btn-primary"
+                id="openCreateModal">
                 + Nueva entrada
             </button>
         <?php endif; ?>
@@ -43,164 +39,196 @@ $isAdmin = !Yii::$app->user->isGuest
 <!-- SEARCH -->
 <div class="toolbar">
 
-    <?= Html::beginForm(['bitacoras/index'], 'get') ?>
+<?= Html::beginForm(['bitacoras/index'], 'get') ?>
 
-    <?= Html::input(
-        'text',
-        'BitacorasSearch[descripcion]',
-        Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '',
-        [
-            'class' => 'search-input',
-            'placeholder' => 'Buscar descripción...'
-        ]
-    ) ?>
+<?= Html::input(
+    'text',
+    'BitacorasSearch[descripcion]',
+    Yii::$app->request->get('BitacorasSearch')['descripcion'] ?? '',
+    [
+        'class' => 'search-input',
+        'placeholder' => 'Buscar descripción...'
+    ]
+) ?>
 
-    <?= Html::submitButton('Buscar', ['class' => 'btn-primary']) ?>
+<?= Html::submitButton('Buscar', [
+    'class' => 'btn-primary'
+]) ?>
 
-    <?= Html::endForm() ?>
+<?= Html::endForm() ?>
 
 </div>
 
-<?php Pjax::begin(['id' => 'bitacoraPjax']); ?>
+<?php Pjax::begin([
+    'id' => 'bitacoraPjax'
+]); ?>
 
-<!-- =========================
-     TIMELINE VIEW
-========================= -->
-
-
-
-
+<!-- TIMELINE -->
 <div id="timelineView">
 
-    <div class="timeline-premium">
+<div class="timeline-premium">
 
-        <?php if (empty($dataProvider->models)): ?>
+<?php if (empty($dataProvider->models)): ?>
 
-            <div class="empty-state">
-                <h3>Sin registros</h3>
-                <p>No hay actividad disponible.</p>
+    <div class="empty-state">
+        <h3>Sin registros</h3>
+        <p>No hay actividad disponible.</p>
+    </div>
+
+<?php else: ?>
+
+<?php foreach ($dataProvider->models as $item): ?>
+
+<?php
+
+$usuario = $item->usuario
+    ? $item->usuario->nombre . ' ' . $item->usuario->apellido
+    : 'Usuario no disponible';
+
+$laboratorio = $item->laboratorio
+    ? $item->laboratorio->nombre
+    : 'Sin laboratorio';
+
+$tipo = $item->tipoEvento->nombre ?? 'Sin tipo';
+
+$estado = $item->estado->nombre ?? 'Sin estado';
+
+$fecha = $item->fecha_evento
+    ? Yii::$app->formatter->asDatetime($item->fecha_evento)
+    : 'Sin fecha';
+
+$clase = $item->claseProgramada;
+
+$detalleClase = '';
+
+if ($clase) {
+
+    $detalleClase =
+        ucfirst($clase->dia_semana) . ' | ' .
+        substr($clase->hora_inicio, 0, 5) . ' - ' .
+        substr($clase->hora_fin, 0, 5);
+
+    if ($clase->materia) {
+        $detalleClase .= ' | ' . $clase->materia->nombre;
+    }
+
+    if ($clase->curso) {
+        $detalleClase .= ' | ' . $clase->curso->nombre;
+    }
+}
+
+?>
+
+<article class="premium-card">
+
+    <!-- TOP -->
+    <div class="premium-top">
+
+        <div class="premium-mark"></div>
+
+        <div class="premium-main">
+
+            <div class="premium-headline">
+
+                <h3>
+                    <?= Html::encode(
+                        $item->titulo ?: 'Sin título'
+                    ) ?>
+                </h3>
+
+                <time>
+                    <i class="bi bi-calendar3"></i>
+                    <?= $fecha ?>
+                </time>
+
             </div>
 
-        <?php else: ?>
+            <p class="premium-desc">
+                <?= nl2br(
+                    Html::encode($item->descripcion)
+                ) ?>
+            </p>
 
-            <?php foreach ($dataProvider->models as $item): ?>
+        </div>
 
-                <?php
-                $usuario = $item->reserva && $item->reserva->usuario
-                    ? $item->reserva->usuario->nombre . ' ' . $item->reserva->usuario->apellido
-                    : 'Usuario no disponible';
+    </div>
 
-                $laboratorio = $item->reserva && $item->reserva->laboratorio
-                    ? $item->reserva->laboratorio->nombre
-                    : 'Sin laboratorio';
+    <!-- FOOT -->
+    <div class="premium-foot">
 
-                $tipo = $item->tipoEvento?->nombre ?? 'Sin tipo';
-                $estado = $item->estado?->nombre ?? 'Sin estado';
+        <div class="premium-tags">
 
-                $fecha = $item->fecha_evento
-                    ? Yii::$app->formatter->asDatetime($item->fecha_evento)
-                    : 'Sin fecha';
-                ?>
+            <span>
+                <i class="bi bi-person-circle"></i>
+                <?= Html::encode($usuario) ?>
+            </span>
 
-                <article class="premium-card">
+            <span>
+                <i class="bi bi-building"></i>
+                <?= Html::encode($laboratorio) ?>
+            </span>
 
-                    <!-- TOP -->
-                    <div class="premium-top">
+            <span>
+                <i class="bi bi-tag"></i>
+                <?= Html::encode($tipo) ?>
+            </span>
 
-                        <div class="premium-mark"></div>
+            <span>
+                <i class="bi bi-shield-check"></i>
+                <?= Html::encode($estado) ?>
+            </span>
 
-                        <div class="premium-main">
+            <?php if ($detalleClase): ?>
+                <span>
+                    <i class="bi bi-journal-bookmark"></i>
+                    <?= Html::encode($detalleClase) ?>
+                </span>
+            <?php endif; ?>
 
-                            <div class="premium-headline">
+        </div>
 
-                                <h3>
-                                    <?= Html::encode($item->titulo ?: 'Sin título') ?>
-                                </h3>
+        <?php if ($isAdmin): ?>
 
-                                <time>
-                                    <i class="bi bi-calendar3"></i>
-                                    <?= $fecha ?>
-                                </time>
+        <div class="premium-actions">
 
-                            </div>
+            <?= Html::a(
+                '<i class="bi bi-pencil"></i>',
+                ['update', 'id' => $item->id],
+                [
+                    'class' => 'premium-btn open-edit',
+                    'title' => 'Editar'
+                ]
+            ) ?>
 
-                            <p class="premium-desc">
-                                <?= nl2br(Html::encode($item->descripcion)) ?>
-                            </p>
+            <?= Html::a(
+                '<i class="bi bi-trash"></i>',
+                ['delete', 'id' => $item->id],
+                [
+                    'class' => 'premium-btn danger',
+                    'title' => 'Eliminar',
+                    'data-confirm' =>
+                        '¿Eliminar esta entrada?',
+                    'data-method' => 'post',
+                ]
+            ) ?>
 
-                        </div>
-
-                    </div>
-
-                    <!-- FOOT -->
-                    <div class="premium-foot">
-
-                        <div class="premium-tags">
-
-                            <span>
-                                <i class="bi bi-person-circle"></i>
-                                <?= Html::encode($usuario) ?>
-                            </span>
-
-                            <span>
-                                <i class="bi bi-building"></i>
-                                <?= Html::encode($laboratorio) ?>
-                            </span>
-
-                            <span>
-                                <i class="bi bi-tag"></i>
-                                <?= Html::encode($tipo) ?>
-                            </span>
-
-                            <span>
-                                <i class="bi bi-shield-check"></i>
-                                <?= Html::encode($estado) ?>
-                            </span>
-
-                        </div>
-
-                        <?php if ($isAdmin): ?>
-
-                            <div class="premium-actions">
-
-                                <?= Html::a(
-                                    '<i class="bi bi-pencil"></i>',
-                                    ['update', 'id' => $item->id],
-                                    [
-                                        'class' => 'premium-btn open-edit',
-                                        'title' => 'Editar'
-                                    ]
-                                ) ?>
-
-                                <?= Html::a(
-                                    '<i class="bi bi-trash"></i>',
-                                    ['delete', 'id' => $item->id],
-                                    [
-                                        'class' => 'premium-btn danger',
-                                        'title' => 'Eliminar',
-                                        'data-confirm' => '¿Eliminar esta entrada?',
-                                        'data-method' => 'post',
-                                    ]
-                                ) ?>
-
-                            </div>
-
-                        <?php endif; ?>
-
-                    </div>
-
-                </article>
-
-            <?php endforeach; ?>
+        </div>
 
         <?php endif; ?>
 
     </div>
 
+</article>
+
+<?php endforeach; ?>
+<?php endif; ?>
+
+</div>
 </div>
 
+<?php Pjax::end(); ?>
 
-
+</div>
 
 
 
@@ -209,7 +237,6 @@ $isAdmin = !Yii::$app->user->isGuest
 ========================= -->
 
 
-<?php Pjax::end(); ?>
 
 <!-- MODAL -->
 <div id="crudModal" class="crud-modal">

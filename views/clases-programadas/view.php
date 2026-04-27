@@ -4,14 +4,14 @@ use yii\helpers\Html;
 use yii\widgets\DetailView;
 
 /** @var yii\web\View $this */
-/** @var app\models\Reservas $model */
+/** @var app\models\ClasesProgramadas $model */
 
 $this->title = $model->id;
-$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Reservas'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Clases Programadas'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-<div class="reservas-view">
+<div class="clases-programadas-view">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
@@ -29,10 +29,13 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
-           
+            'id',
             'laboratorio_id',
-            'usuario_id',
-            'fecha',
+            'docente_id',
+            'materia_id',
+            'curso_id',
+            'periodo_id',
+            'dia_semana',
             'hora_inicio',
             'hora_fin',
             'estado',

@@ -13,9 +13,9 @@ class Usuarios extends \yii\db\ActiveRecord implements IdentityInterface
     // ROLES (ahora por ID)
     // ========================
     // ROLES
-    const ROL_ADMIN = 1;
+    const ROL_ADMIN   = 1;
     const ROL_DOCENTE = 2;
-    const ROL_LABORATORISTA = 3;
+    const ROL_TECNICO = 3;
 
     // ESTADOS
     const ESTADO_ACTIVO = 'activo';

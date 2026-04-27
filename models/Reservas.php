@@ -170,4 +170,22 @@ class Reservas extends \yii\db\ActiveRecord
     {
         $this->estado = self::ESTADO_CANCELADA;
     }
+
+
+
+    public function validarConflicto()
+{
+    $existe = Reservas::find()
+        ->where(['laboratorio_id' => $this->laboratorio_id])
+        ->andWhere(['fecha' => $this->fecha])
+        ->andWhere("hora_inicio < :fin AND hora_fin > :inicio", [
+            ':inicio' => $this->hora_inicio,
+            ':fin' => $this->hora_fin
+        ])
+        ->exists();
+
+    if ($existe) {
+        $this->addError('hora_inicio', 'Ya existe una reserva en ese horario.');
+    }
+}
 }

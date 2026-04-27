@@ -14,7 +14,7 @@ class BitacorasSearch extends Bitacoras
             [
                 [
                     'id',
-                    'reserva_id',
+                    'clase_programada_id',
                     'laboratorio_id',
                     'usuario_id',
                     'tipo_evento_id',
@@ -41,7 +41,14 @@ class BitacorasSearch extends Bitacoras
 
     public function search($params, $formName = null)
     {
-        $query = Bitacoras::find();
+        $query = Bitacoras::find()
+            ->with([
+                'claseProgramada',
+                'laboratorio',
+                'usuario',
+                'tipoEvento',
+                'estado'
+            ]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -49,6 +56,9 @@ class BitacorasSearch extends Bitacoras
                 'defaultOrder' => [
                     'fecha_evento' => SORT_DESC
                 ]
+            ],
+            'pagination' => [
+                'pageSize' => 10
             ]
         ]);
 
@@ -61,14 +71,14 @@ class BitacorasSearch extends Bitacoras
         // filtros exactos
         $query->andFilterWhere([
             'id' => $this->id,
-            'reserva_id' => $this->reserva_id,
+            'clase_programada_id' => $this->clase_programada_id,
             'laboratorio_id' => $this->laboratorio_id,
             'usuario_id' => $this->usuario_id,
             'tipo_evento_id' => $this->tipo_evento_id,
             'estado_id' => $this->estado_id,
         ]);
 
-        // filtros tipo búsqueda (LIKE)
+        // filtros parciales
         $query->andFilterWhere(['like', 'titulo', $this->titulo])
               ->andFilterWhere(['like', 'descripcion', $this->descripcion])
               ->andFilterWhere(['like', 'fecha_evento', $this->fecha_evento]);

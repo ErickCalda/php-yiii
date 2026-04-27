@@ -14,20 +14,23 @@ class Bitacoras extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
+
+            // Campos obligatorios
             [
                 [
-                    'reserva_id',
                     'laboratorio_id',
                     'tipo_evento_id',
                     'titulo',
-                    'descripcion'
+                    'descripcion',
+                    'fecha_evento'
                 ],
                 'required'
             ],
 
+            // Enteros
             [
                 [
-                    'reserva_id',
+                    'clase_programada_id',
                     'laboratorio_id',
                     'usuario_id',
                     'tipo_evento_id',
@@ -36,9 +39,10 @@ class Bitacoras extends \yii\db\ActiveRecord
                 'integer'
             ],
 
+            // Texto largo
             [['descripcion'], 'string'],
 
-            // solo fechas reales del sistema
+            // Fechas
             [
                 [
                     'fecha_evento',
@@ -48,6 +52,7 @@ class Bitacoras extends \yii\db\ActiveRecord
                 'safe'
             ],
 
+            // Texto corto
             [['titulo'], 'string', 'max' => 150],
         ];
     }
@@ -55,13 +60,16 @@ class Bitacoras extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'reserva_id' => 'Reserva',
-            'laboratorio_id' => 'Laboratorio',
-            'tipo_evento_id' => 'Tipo de evento',
-            'estado_id' => 'Estado',
-            'titulo' => 'Título',
-            'descripcion' => 'Descripción',
-            'fecha_evento' => 'Fecha del evento',
+            'clase_programada_id' => 'Clase Programada',
+            'laboratorio_id'      => 'Laboratorio',
+            'usuario_id'          => 'Usuario',
+            'tipo_evento_id'      => 'Tipo de Evento',
+            'estado_id'           => 'Estado',
+            'titulo'              => 'Título',
+            'descripcion'         => 'Descripción',
+            'fecha_evento'        => 'Fecha del Evento',
+            'fecha_creacion'      => 'Fecha Creación',
+            'fecha_actualizacion' => 'Última Actualización',
         ];
     }
 
@@ -69,48 +77,60 @@ class Bitacoras extends \yii\db\ActiveRecord
     {
         if ($insert) {
 
-            // 👤 Usuario automático
+            // Usuario logueado automático
             $this->usuario_id = Yii::$app->user->id;
 
-            // 📌 Estado por defecto
-            $this->estado_id = $this->estado_id ?: 1;
+            // Estado por defecto
+            if (empty($this->estado_id)) {
+                $this->estado_id = 1;
+            }
 
-            // ⏱ creación automática
+            // Fecha creación
             $this->fecha_creacion = date('Y-m-d H:i:s');
         }
 
-        // ⏱ actualización automática
+        // Fecha actualización
         $this->fecha_actualizacion = date('Y-m-d H:i:s');
 
         return parent::beforeSave($insert);
     }
 
-    /* =========================
+    /* =====================================
      * RELACIONES
-     * ========================= */
+     * ===================================== */
 
-    public function getReserva()
+    public function getClaseProgramada()
     {
-        return $this->hasOne(Reservas::class, ['id' => 'reserva_id']);
+        return $this->hasOne(ClasesProgramadas::class, [
+            'id' => 'clase_programada_id'
+        ]);
     }
 
     public function getLaboratorio()
     {
-        return $this->hasOne(Laboratorios::class, ['id' => 'laboratorio_id']);
+        return $this->hasOne(Laboratorios::class, [
+            'id' => 'laboratorio_id'
+        ]);
     }
 
     public function getUsuario()
     {
-        return $this->hasOne(Usuarios::class, ['id' => 'usuario_id']);
+        return $this->hasOne(Usuarios::class, [
+            'id' => 'usuario_id'
+        ]);
     }
 
     public function getTipoEvento()
     {
-        return $this->hasOne(CatTiposEvento::class, ['id' => 'tipo_evento_id']);
+        return $this->hasOne(CatTiposEvento::class, [
+            'id' => 'tipo_evento_id'
+        ]);
     }
 
     public function getEstado()
     {
-        return $this->hasOne(CatEstadosBitacora::class, ['id' => 'estado_id']);
+        return $this->hasOne(CatEstadosBitacora::class, [
+            'id' => 'estado_id'
+        ]);
     }
 }

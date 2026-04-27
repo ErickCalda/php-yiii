@@ -8,13 +8,16 @@ use app\models\Usuarios;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
 
 class BitacorasController extends Controller
 {
     public function behaviors()
     {
         return [
+
             'access' => [
                 'class' => AccessControl::class,
                 'only' => ['create', 'update', 'delete'],
@@ -23,34 +26,45 @@ class BitacorasController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function () {
-                            return (int) Yii::$app->user->identity->rol_id === (int) Usuarios::ROL_ADMIN;
+                            return (int) Yii::$app->user->identity->rol_id ===
+                                   (int) Usuarios::ROL_ADMIN;
                         }
                     ],
                 ],
                 'denyCallback' => function () {
-                    throw new \yii\web\ForbiddenHttpException('Sin permiso');
+                    throw new \yii\web\ForbiddenHttpException('Sin permiso.');
                 },
             ],
+
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+
         ];
     }
 
-    /* =========================
+    /* ==================================
      * LISTADO
-     * ========================= */
+     * ================================== */
     public function actionIndex()
     {
         $searchModel = new BitacorasSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $dataProvider = $searchModel->search(
+            Yii::$app->request->queryParams
+        );
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
 
-    /* =========================
-     * VER
-     * ========================= */
+    /* ==================================
+     * VER DETALLE
+     * ================================== */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -58,22 +72,20 @@ class BitacorasController extends Controller
         ]);
     }
 
-    /* =========================
-     * CREAR (AJAX MODAL)
-     * ========================= */
+    /* ==================================
+     * CREAR
+     * ================================== */
     public function actionCreate()
     {
         $model = new Bitacoras();
 
         if ($model->load(Yii::$app->request->post())) {
 
-            // ⚡ guardar directamente (usuario y estado se manejan en beforeSave)
             if ($model->save()) {
                 return 'success';
             }
 
-            // 🔥 devolver errores reales si falla
-            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            Yii::$app->response->format = Response::FORMAT_JSON;
             return $model->errors;
         }
 
@@ -84,9 +96,9 @@ class BitacorasController extends Controller
         ]);
     }
 
-    /* =========================
+    /* ==================================
      * ACTUALIZAR
-     * ========================= */
+     * ================================== */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -97,7 +109,7 @@ class BitacorasController extends Controller
                 return 'success';
             }
 
-            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            Yii::$app->response->format = Response::FORMAT_JSON;
             return $model->errors;
         }
 
@@ -108,38 +120,43 @@ class BitacorasController extends Controller
         ]);
     }
 
-    /* =========================
+    /* ==================================
      * ELIMINAR
-     * ========================= */
+     * ================================== */
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
+
         return $this->redirect(['index']);
     }
 
-    /* =========================
+    /* ==================================
+     * TABLA PARCIAL / AJAX
+     * ================================== */
+    public function actionTable()
+    {
+        $searchModel = new BitacorasSearch();
+        $dataProvider = $searchModel->search(
+            Yii::$app->request->queryParams
+        );
+
+        return $this->render('table', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /* ==================================
      * FIND MODEL
-     * ========================= */
+     * ================================== */
     protected function findModel($id)
     {
         if (($model = Bitacoras::findOne($id)) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException('La página no existe.');
-    }
-
-    /* =========================
-     * TABLA VIEW (OPCIONAL)
-     * ========================= */
-    public function actionTable()
-    {
-        $searchModel = new BitacorasSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
-        return $this->render('table', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+        throw new NotFoundHttpException(
+            'La bitácora solicitada no existe.'
+        );
     }
 }
