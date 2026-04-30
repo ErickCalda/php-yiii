@@ -7,8 +7,6 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use yii\helpers\ArrayHelper;
-use yii\web\Response;
 
 use app\models\ClasesProgramadas;
 use app\models\ClasesProgramadasSearch;
@@ -20,96 +18,161 @@ use app\models\PeriodosAcademicos;
 
 class ClasesProgramadasController extends Controller
 {
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['index', 'view', 'create', 'update', 'delete'],
-                'rules' => [
+ 
 
-                    // ADMIN / DOCENTE / TECNICO
-                    [
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'actions' => ['index', 'view'],
-                    ],
 
-                    // ADMIN / DOCENTE / TECNICO crean
-                    [
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'actions' => ['create'],
-                        'matchCallback' => function () {
-                            return in_array(
-                                (int) Yii::$app->user->identity->rol_id,
-                                [
-                                    Usuarios::ROL_ADMIN,
-                                    Usuarios::ROL_DOCENTE,
-                                    Usuarios::ROL_TECNICO
-                                ]
-                            );
-                        }
-                    ],
+public function behaviors()
+{
+    return [
+        'access' => [
+            'class' => AccessControl::class,
 
-                    // ADMIN / TECNICO editan
-                    [
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'actions' => ['update'],
-                        'matchCallback' => function () {
-                            return in_array(
-                                (int) Yii::$app->user->identity->rol_id,
-                                [
-                                    Usuarios::ROL_ADMIN,
-                                    Usuarios::ROL_TECNICO
-                                ]
-                            );
-                        }
-                    ],
-
-                    // SOLO ADMIN elimina
-                    [
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'actions' => ['delete'],
-                        'matchCallback' => function () {
-                            return (int) Yii::$app->user->identity->rol_id
-                                === (int) Usuarios::ROL_ADMIN;
-                        }
-                    ],
-                ],
-                'denyCallback' => function () {
-                    throw new \yii\web\ForbiddenHttpException('Sin permisos.');
-                }
+            // 🔥 IMPORTANTE
+            'only' => [
+                'index',
+                'view',
+                'create',
+                'update',
+                'delete',
+                'check-horario'
             ],
 
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'delete' => ['POST'],
+            'rules' => [
+
+                /* =========================
+                   VER LISTADO / VER DETALLE
+                ========================= */
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'actions' => ['index', 'view'],
+                ],
+
+                /* =========================
+                   CREAR
+                ========================= */
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'actions' => ['create'],
+                ],
+
+                /* =========================
+                   EDITAR
+                ========================= */
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'actions' => ['update'],
+                ],
+
+                /* =========================
+                   AJAX VALIDAR HORARIO
+                ========================= */
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'actions' => ['check-horario'],
+                ],
+
+                /* =========================
+                   ELIMINAR SOLO ADMIN
+                ========================= */
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                    'actions' => ['delete'],
+
+                    'matchCallback' => fn() =>
+                        Yii::$app->user->identity->rol_id
+                        == Usuarios::ROL_ADMIN
                 ],
             ],
-        ];
-    }
 
-    /* ==================================================
+            /* =========================
+               SI NO TIENE PERMISO
+            ========================= */
+            'denyCallback' => function () {
+                throw new \yii\web\ForbiddenHttpException(
+                    'No tienes permisos para acceder.'
+                );
+            }
+        ],
+
+        /* =========================
+           VERB FILTER
+        ========================= */
+        'verbs' => [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'delete' => ['POST'],
+                'check-horario' => ['POST'],
+            ],
+        ],
+    ];
+}
+
+    /* =========================
        INDEX
-    ================================================== */
-    public function actionIndex()
-    {
-        $searchModel = new ClasesProgramadasSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+    ========================= */
+/* =========================
+   INDEX (ADMIN VE TODO /
+   DOCENTE SOLO SUS HORAS)
+   REEMPLAZA TU actionIndex()
+========================= */
+public function actionIndex()
+{
+    $searchModel = new ClasesProgramadasSearch();
 
-        return $this->render('index', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
+    $dataProvider = $searchModel->search(
+        Yii::$app->request->queryParams
+    );
+
+    $query = $dataProvider->query;
+
+    $usuario = Yii::$app->user->identity;
+
+    /* =========================
+       SI NO ES ADMIN
+    ========================= */
+    if ($usuario->rol_id != Usuarios::ROL_ADMIN) {
+
+        /* SOLO CLASES DEL DOCENTE */
+        $query->andWhere([
+            'docente_id' => $usuario->id
         ]);
     }
 
-    /* ==================================================
+    /* =========================
+       ORDEN BONITO HORARIO
+    ========================= */
+$query->orderBy([
+    new \yii\db\Expression("
+        FIELD(
+            dia_semana,
+            'lunes',
+            'martes',
+            'miercoles',
+            'jueves',
+            'viernes',
+            'sabado'
+        )
+    "),
+    'hora_inicio' => SORT_ASC
+]);
+
+    /* SIN PAGINACIÓN */
+    $dataProvider->pagination = false;
+
+    return $this->render('index', [
+        'searchModel' => $searchModel,
+        'dataProvider' => $dataProvider,
+    ]);
+}
+
+    /* =========================
        VIEW
-    ================================================== */
+    ========================= */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -117,23 +180,20 @@ class ClasesProgramadasController extends Controller
         ]);
     }
 
-    /* ==================================================
+    /* =========================
        CREATE
-    ================================================== */
-    public function actionCreate()
-    {
-        $model = new ClasesProgramadas();
+    ========================= */
+   public function actionCreate()
+{
+    $model = new ClasesProgramadas();
 
-        if ($model->load(Yii::$app->request->post())) {
+    if ($model->load(Yii::$app->request->post())) {
 
-            if ($this->existeCruceHorario($model)) {
-                $model->addError(
-                    'hora_inicio',
-                    'Ya existe una clase programada en ese horario.'
-                );
-            }
+        /* VALIDACIÓN PERSONALIZADA */
+        if ($this->validarReserva($model)) {
 
-            if (!$model->hasErrors() && $model->save()) {
+            /* GUARDAR */
+            if ($model->save()) {
 
                 Yii::$app->session->setFlash(
                     'success',
@@ -142,38 +202,48 @@ class ClasesProgramadasController extends Controller
 
                 return $this->redirect(['index']);
             }
-        }
 
-        return $this->render('create', [
-            'model' => $model,
-            'listas' => $this->getListas(),
-        ]);
+            /* ERROR AL GUARDAR */
+            Yii::$app->session->setFlash(
+                'error',
+                'No se pudo guardar la clase. Revise los campos.'
+            );
+
+        } else {
+
+            Yii::$app->session->setFlash(
+                'warning',
+                'Existen conflictos en la reserva.'
+            );
+        }
     }
 
-    /* ==================================================
+    return $this->render('create', [
+        'model' => $model,
+        'listas' => $this->getListas(),
+    ]);
+}
+
+    /* =========================
        UPDATE
-    ================================================== */
+    ========================= */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post())) {
 
-            if ($this->existeCruceHorario($model, $model->id)) {
-                $model->addError(
-                    'hora_inicio',
-                    'Ese horario ya está ocupado.'
-                );
-            }
+            if ($this->validarReserva($model, $model->id)) {
 
-            if (!$model->hasErrors() && $model->save()) {
+                if ($model->save()) {
 
-                Yii::$app->session->setFlash(
-                    'success',
-                    'Clase actualizada.'
-                );
+                    Yii::$app->session->setFlash(
+                        'success',
+                        'Clase actualizada correctamente.'
+                    );
 
-                return $this->redirect(['index']);
+                    return $this->redirect(['index']);
+                }
             }
         }
 
@@ -183,9 +253,9 @@ class ClasesProgramadasController extends Controller
         ]);
     }
 
-    /* ==================================================
+    /* =========================
        DELETE
-    ================================================== */
+    ========================= */
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
@@ -198,100 +268,166 @@ class ClasesProgramadasController extends Controller
         return $this->redirect(['index']);
     }
 
-    /* ==================================================
-       LISTAS PARA FORM
-    ================================================== */
-    private function getListas()
+    /* =========================
+       🔥 MOTOR DE RESERVAS REAL
+    ========================= */
+    private function validarReserva($model, $ignoreId = null)
     {
-        return [
+        // =========================
+        // VALIDACIÓN DE HORAS
+        // =========================
+        if (!$model->hora_inicio || !$model->hora_fin) {
+            $model->addError('hora_inicio', 'Horas obligatorias.');
+            return false;
+        }
 
-            'laboratorios' => ArrayHelper::map(
-                Laboratorios::find()
-                    ->orderBy('nombre')
-                    ->all(),
-                'id',
-                'nombre'
-            ),
+        if ($model->hora_inicio >= $model->hora_fin) {
+            $model->addError('hora_fin', 'La hora fin debe ser mayor.');
+            return false;
+        }
 
-            'docentes' => ArrayHelper::map(
-                Usuarios::find()
-                    ->where([
-                        'rol_id' => Usuarios::ROL_DOCENTE
-                    ])
-                    ->orderBy('nombre')
-                    ->all(),
-                'id',
-                function ($u) {
-                    return $u->nombre . ' ' . $u->apellido;
-                }
-            ),
-
-            'materias' => ArrayHelper::map(
-                Materias::find()
-                    ->orderBy('nombre')
-                    ->all(),
-                'id',
-                'nombre'
-            ),
-
-            'cursos' => ArrayHelper::map(
-                Cursos::find()
-                    ->orderBy('nombre')
-                    ->all(),
-                'id',
-                'nombre'
-            ),
-
-            'periodos' => ArrayHelper::map(
-                PeriodosAcademicos::find()
-                    ->where(['activo' => 1])
-                    ->all(),
-                'id',
-                'nombre'
-            ),
-        ];
-    }
-
-    /* ==================================================
-       VALIDAR CHOQUE HORARIO
-    ================================================== */
-    private function existeCruceHorario($model, $ignoreId = null)
-    {
+        // =========================
+        // BASE DE SOLAPAMIENTO
+        // =========================
         $query = ClasesProgramadas::find()
             ->where([
-                'laboratorio_id' => $model->laboratorio_id,
                 'dia_semana' => $model->dia_semana,
-                'estado' => 1
-            ])
-            ->andWhere([
-                '<',
-                'hora_inicio',
-                $model->hora_fin
-            ])
-            ->andWhere([
-                '>',
-                'hora_fin',
-                $model->hora_inicio
+                'estado' => 1,
             ]);
 
         if ($ignoreId) {
             $query->andWhere(['<>', 'id', $ignoreId]);
         }
 
-        return $query->exists();
+        $query->andWhere([
+            'or',
+
+            // inicio dentro
+            [
+                'and',
+                ['<=', 'hora_inicio', $model->hora_inicio],
+                ['>', 'hora_fin', $model->hora_inicio],
+            ],
+
+            // fin dentro
+            [
+                'and',
+                ['<', 'hora_inicio', $model->hora_fin],
+                ['>=', 'hora_fin', $model->hora_fin],
+            ],
+
+            // encapsula
+            [
+                'and',
+                ['>=', 'hora_inicio', $model->hora_inicio],
+                ['<=', 'hora_fin', $model->hora_fin],
+            ],
+        ]);
+
+        // =========================
+        // LABORATORIO
+        // =========================
+        if ((clone $query)->andWhere(['laboratorio_id' => $model->laboratorio_id])->exists()) {
+            $model->addError('laboratorio_id', 'Laboratorio ocupado.');
+            return false;
+        }
+
+        // =========================
+        // DOCENTE
+        // =========================
+        if ((clone $query)->andWhere(['docente_id' => $model->docente_id])->exists()) {
+            $model->addError('docente_id', 'Docente ocupado.');
+            return false;
+        }
+
+        // =========================
+        // CURSO
+        // =========================
+        if ((clone $query)->andWhere(['curso_id' => $model->curso_id])->exists()) {
+            $model->addError('curso_id', 'Curso ya tiene clase en ese horario.');
+            return false;
+        }
+
+        // =========================
+        // PERIODO ACTIVO
+        // =========================
+        $periodo = PeriodosAcademicos::findOne($model->periodo_id ?? null);
+
+        if (!$periodo || !$periodo->activo) {
+            $model->addError('periodo_id', 'Periodo no activo.');
+            return false;
+        }
+
+        return true;
     }
 
-    /* ==================================================
-       FIND MODEL
-    ================================================== */
+    /* =========================
+       LISTAS FORM
+    ========================= */
+    private function getListas()
+    {
+        return [
+            'laboratorios' => Laboratorios::find()->select(['nombre','id'])->indexBy('id')->column(),
+
+            'docentes' => Usuarios::find()
+                ->where(['rol_id' => Usuarios::ROL_DOCENTE])
+                ->select(['id', 'nombre', 'apellido'])
+                ->all(),
+
+            'materias' => Materias::find()->select(['nombre','id'])->indexBy('id')->column(),
+
+            'cursos' => Cursos::find()->select(['nombre','id'])->indexBy('id')->column(),
+
+            'periodos' => PeriodosAcademicos::find()
+                ->where(['activo' => 1])
+                ->select(['nombre','id'])
+                ->indexBy('id')
+                ->column(),
+        ];
+    }
+
+    /* =========================
+       FIND
+    ========================= */
     protected function findModel($id)
     {
         if (($model = ClasesProgramadas::findOne($id)) !== null) {
             return $model;
         }
 
-        throw new NotFoundHttpException(
-            'Registro no encontrado.'
-        );
+        throw new NotFoundHttpException('No encontrado.');
     }
+
+
+
+public function actionCheckHorario()
+{
+    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+    $model = new ClasesProgramadas();
+
+    $model->laboratorio_id = Yii::$app->request->post('laboratorio_id');
+    $model->docente_id     = Yii::$app->request->post('docente_id');
+    $model->curso_id       = Yii::$app->request->post('curso_id');
+    $model->dia_semana     = Yii::$app->request->post('dia_semana');
+    $model->hora_inicio    = Yii::$app->request->post('hora_inicio');
+    $model->hora_fin       = Yii::$app->request->post('hora_fin');
+    $model->periodo_id     = Yii::$app->request->post('periodo_id');
+
+    if ($this->validarReserva($model)) {
+        return [
+            'ok' => true,
+            'msg' => '✅ Horario disponible'
+        ];
+    }
+
+    $errores = $model->getFirstErrors();
+
+    return [
+        'ok' => false,
+        'msg' => reset($errores)
+    ];
+}
+
+
 }

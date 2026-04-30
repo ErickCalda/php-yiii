@@ -1,261 +1,405 @@
-/* =====================================
-   GENERAL
-===================================== */
-body{
-    margin:0;
-    background:#6366F1;
-    overflow-x:hidden;
-}
+/* =========================
+   SIDEBAR BASE
+========================= */
 
-/* =====================================
-   SIDEBAR
-===================================== */
-/* ===============================
-   SIDEBAR
-=============================== */
 #sidebar{
-    position:fixed;
-    top:0;
-    left:0;
-    width:250px;
-    height:100vh;
-    background:#e0dfdc;
-    overflow:hidden;
-    transition:width .28s ease;
-    z-index:999;
+    width:240px !important;
+    background:hsl(0, 0%, 100%) !important;
+  
+    transition:.25s ease;
 }
 
-/* ===============================
-   MAIN
-=============================== */
-#main{
-    margin-left:250px;
-    min-height:100vh;
-    padding:10px;
-    transition:margin-left .28s ease;
+/* CONTENEDOR */
+#sidebar ul{
+    padding:12px 10px;
 }
 
-/* ===============================
-   COLAPSADO
-=============================== */
-body.sidebar-collapsed #sidebar{
-    width:70px;
+/* BOTÓN TOGGLE */
+#toggleSidebar{
+    width:100%;
+    margin-bottom:12px;
+    border-radius:10px;
+    border:none;
+    background:#ffffff;
+    padding:8px;
+    transition:.2s;
+    cursor:pointer;
 }
 
-body.sidebar-collapsed #main{
-    margin-left:70px;
+#toggleSidebar:hover{
+    background:#ffffff;
 }
 
-/* =====================================
-   NAV MENU
-===================================== */
-#sidebar .nav{
-    padding:0 12px;
-}
-
-#sidebar .nav-item{
-    margin-bottom:6px;
-}
+/* =========================
+   NAV ITEMS
+========================= */
 
 #sidebar .nav-link{
     display:flex;
     align-items:center;
     justify-content:flex-start;
+
     gap:12px;
-    padding:12px;
-    color:white;
-    text-decoration:none;
-    border-radius:10px;
-    overflow:hidden;
-    white-space:nowrap;
-    transition:all .25s ease;
+    padding:10px 12px;
+    margin-bottom:4px;
+
+    border:none;
+
+    font-size:13px;
+    font-weight:500;
+
+    color:#334155 !important;
+    background:transparent;
+
+    transition:.15s ease;
 }
 
-/* Hover */
-#sidebar .nav-link:hover{
-    background:#b6b7fc;
-}
-
-/* =====================================
-   ICONOS
-===================================== */
-#sidebar .nav-link i:first-child{
+/* ICONOS BASE */
+#sidebar .nav-link i{
+    width:22px;
+    height:22px;
     min-width:22px;
-    text-align:center;
-    font-size:18px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border:none;
+
+    font-size:14px;
+
+    transition:.2s;
 }
 
-/* =====================================
-   LOGO
-===================================== */
-.logo-container{
+/* =========================
+   COLORES TIPO NOTION
+========================= */
+
+/* Home */
+.bi-house-door{
+    background:#EEF2FF;
+    color:#6366F1 !important;
+}
+
+/* Bitácora */
+.bi-file-earmark-person-fill{
+    background:#ECFDF5;
+    color:#22C55E !important;
+}
+
+/* Laboratorios */
+.bi-building{
+    background:#FFFBEB;
+    color:#F59E0B !important;
+}
+
+/* Equipos */
+.bi-tools{
+    background:#FEF2F2;
+    color:#EF4444 !important;
+}
+
+/* Materiales */
+.bi-box{
+    background:#ECFEFF;
+    color:#06B6D4 !important;
+}
+
+/* Clases */
+.bi-calendar3{
+    background:#F3E8FF;
+    color:#8B5CF6 !important;
+}
+
+/* Usuarios */
+.bi-person-circle{
+    background:#FDF2F8;
+    color:#EC4899 !important;
+}
+
+/* Cuenta */
+.bi-person-lock{
+    background:#F1F5F9;
+    color:#64748B !important;
+}
+
+/* Flecha */
+.bi-chevron-down{
+    margin-left:auto;
+    color:#94A3B8 !important;
+    background:transparent !important;
+}
+
+/* ROTACIÓN */
+.nav-link[aria-expanded="true"] .bi-chevron-down{
+    transform:rotate(180deg);
+}
+
+/* =========================
+   HOVER
+========================= */
+
+#sidebar .nav-link:hover{
+    background:#F1F5F9;
+}
+
+#sidebar .nav-link:hover i{
+    transform:scale(1.05);
+}
+
+/* =========================
+   ACTIVO
+========================= */
+
+#sidebar .nav-link.active{
+    background:#F1F5F9;
+    color:#4F46E5 !important;
+    font-weight:600;
+}
+
+
+
+/* =========================
+   SUBMENU
+========================= */
+
+#sidebar .collapse .nav-link{
+    padding-left:42px;
+    font-size:12px;
+    color:#475569 !important;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+body{
+    background:#ffffff !important;
+}
+
+#main{
+    margin-left:240px;
+    padding:20px !important;
+    transition:.25s ease;
+}
+
+/* =========================
+   COLLAPSE
+========================= */
+
+body.sidebar-collapsed #sidebar{
+    width:80px !important;
+}
+
+/* ocultar texto */
+body.sidebar-collapsed #sidebar .link-text{
+    display:none;
+}
+
+/* ocultar flechas */
+body.sidebar-collapsed #sidebar .bi-chevron-down{
+    display:none !important;
+}
+
+/* centrar iconos */
+body.sidebar-collapsed #sidebar .nav-link{
+    justify-content:center;
+    padding:10px 0;
+}
+
+/* quitar fondo iconos en mini */
+body.sidebar-collapsed #sidebar .nav-link i{
+    background:transparent !important;
+}
+
+/* ajustar contenido */
+body.sidebar-collapsed #main{
+    margin-left:80px !important;
+}
+
+/* =========================
+   SCROLL
+========================= */
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#F1F5F9;
+    border-radius:999px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================
+   USER DROPDOWN
+========================= */
+
+.user-topbar{
+    position:absolute;
+    top:12px;
+    right:20px;
+}
+
+/* CONTENEDOR */
+.user-dropdown{
+    position:relative;
+}
+
+/* BOTÓN */
+.user-trigger{
     display:flex;
     align-items:center;
     gap:10px;
+
+    padding:8px 12px;
+
+    background:#FFFFFF;
+    border: none;
+    border-radius:5px;
+
+    cursor:pointer;
+    transition:.2s;
 }
 
-.logo-title{
-    color:white;
-    font-size:20px;
-    font-weight:bold;
-    white-space:nowrap;
-    transition:all .25s ease;
+
+
+/* AVATAR */
+.user-avatar{
+    width:32px;
+    height:32px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:8px;
+
+    background:#EEF2FF;
+    color:#6366F1;
+
+    font-size:14px;
+    font-weight:600;
 }
 
-/* =====================================
-   BOTON TOGGLE
-===================================== */
-#toggleSidebar{
-    width:42px;
-    height:42px;
-    border:none;
+/* META */
+.user-meta{
+    display:flex;
+    flex-direction:column;
+    line-height:1.1;
+}
+
+.user-name{
+    font-size:13px;
+    font-weight:600;
+    color:#0F172A;
+}
+
+.user-role{
+    font-size:11px;
+    color:#64748B;
+}
+
+.user-role.admin{
+    color:#EF4444;
+}
+
+/* FLECHA */
+.dropdown-arrow{
+    margin-left:auto;
+    font-size:12px;
+    color:#94A3B8;
+    transition:.2s;
+}
+
+/* =========================
+   MENÚ
+========================= */
+
+.user-menu{
+    position:absolute;
+    top:110%;
+    right:0;
+
+    width:200px;
+
+    background:#FFFFFF;
+    border:1px solid #E5E7EB;
     border-radius:12px;
-    background:rgba(255,255,255,0.08);
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:all .25s ease;
-}
 
-#toggleSidebar:hover{
-    background:rgba(255,255,255,0.15);
-    transform:scale(1.05);
-}
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
 
-#toggleSidebar:active{
-    transform:scale(0.95);
-}
+    padding:6px;
 
-#toggleSidebar i{
-    font-size:22px;
-    color:white;
-}
-
-/* =====================================
-   TEXTO ANIMADO
-===================================== */
-.link-text{
-    transition:all .20s ease;
-}
-
-/* =====================================
-   SIDEBAR COLAPSADO
-===================================== */
-body.sidebar-collapsed #sidebar{
-    width:70px !important;
-}
-
-body.sidebar-collapsed #main{
-    margin-left:70px;
-}
-
-/* Mantener menú ordenado */
-body.sidebar-collapsed #sidebar .nav{
-    padding:0;
-}
-
-/* Links sin mover al centro raro */
-body.sidebar-collapsed #sidebar .nav-link{
-    padding:12px;
-    justify-content:flex-start;
-    gap:12px;
-}
-
-/* Ocultar textos suavemente */
-body.sidebar-collapsed .link-text,
-body.sidebar-collapsed .logo-title{
     opacity:0;
-    width:0;
-    margin:0;
-    overflow:hidden;
+    transform:translateY(8px);
+    pointer-events:none;
+
+    transition:.2s;
 }
 
-/* Ocultar flechas */
-body.sidebar-collapsed .bi-chevron-down{
-    display:none !important;
+/* ACTIVO */
+.user-dropdown.open .user-menu{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
 }
 
-/* Cerrar submenús */
-body.sidebar-collapsed .collapse{
-    display:none !important;
+/* ROTAR FLECHA */
+.user-dropdown.open .dropdown-arrow{
+    transform:rotate(180deg);
 }
 
-/* =====================================
-   RESPONSIVE
-===================================== */
-@media(max-width:768px){
-
-    #sidebar{
-        left:-250px;
-        width:250px;
-    }
-
-    #sidebar.mobile-open{
-        left:0;
-    }
-
-    #main{
-        margin-left:0 !important;
-    }
-
-    body.sidebar-collapsed #sidebar{
-        width:250px !important;
-    }
-}
-
-/* BOTÓN TOGGLE */
-#toggleSidebar{
-    width:42px;
-    height:42px;
-    border:none;
-    border-radius:0px;
-    background:#ffffff00;
-    color:white;
+/* ITEM */
+.menu-item{
     display:flex;
     align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:all .25s ease;
-  
+    gap:10px;
+
+    padding:8px 10px;
+    border-radius:8px;
+
+    font-size:13px;
+    color:#334155;
+
+    text-decoration:none;
+    transition:.15s;
 }
 
-/* Hover */
-#toggleSidebar:hover{
-    background:rgba(255,255,255,0.15);
-    transform:scale(1.05);
+.menu-item i{
+    width:16px;
+    text-align:center;
+    color:#64748B;
 }
 
-/* Click */
-#toggleSidebar:active{
-    transform:scale(0.95);
+/* HOVER */
+.menu-item:hover{
+    background:#F1F5F9;
 }
 
-/* Icono */
-#toggleSidebar i{
-    font-size:22px;
-    color:white;
+/* DIVIDER */
+.menu-divider{
+    height:1px;
+    background:#E5E7EB;
+    margin:6px 4px;
 }
 
-
-
-
-
-.nav-link i {
-    color: #6366F1;
-    font-size: 1.1rem;        /* un poco más grande */
-    filter: drop-shadow(0 0 0.3px #6366F1); /* grosor visual */
-    font-weight: 600;         /* ayuda en algunos casos */
+/* DANGER */
+.menu-item.danger{
+    color:#EF4444;
 }
 
-
-
-
-
-
-/* OCULTA cursor normal */
-
-
-
-
+.menu-item.danger i{
+    color:#EF4444;
+}

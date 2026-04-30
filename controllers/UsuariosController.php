@@ -13,34 +13,42 @@ use app\models\Roles;
 
 class UsuariosController extends Controller
 {
-    public function behaviors()
-    {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['index', 'view', 'create', 'update', 'delete'],
-                'rules' => [
+ public function behaviors()
+{
+    return [
+        'access' => [
+            'class' => AccessControl::class,
+            'only' => [
+                'index',
+                'view',
+                'create',
+                'update',
+                'delete',
+                'perfil',
+                'cambiar-password'
+            ],
+            'rules' => [
 
-                    // SOLO ADMIN
-                    [
-                        'allow' => true,
-                        'actions' => ['create', 'update', 'delete'],
-                        'roles' => ['@'],
-                        'matchCallback' => function () {
-                            return Yii::$app->user->identity->rol->nombre === 'admin';
-                        },
-                    ],
+                // ADMIN ONLY
+                [
+                    'allow' => true,
+                    'actions' => ['create', 'update', 'delete'],
+                    'roles' => ['@'],
+                    'matchCallback' => function () {
+                        return Yii::$app->user->identity->rol->nombre === 'admin';
+                    },
+                ],
 
-                    // TODOS LOGUEADOS
-                    [
-                        'allow' => true,
-                        'actions' => ['index', 'view'],
-                        'roles' => ['@'],
-                    ],
+                // LOGGED USERS
+                [
+                    'allow' => true,
+                    'actions' => ['index', 'view', 'perfil', 'cambiar-password'],
+                    'roles' => ['@'],
                 ],
             ],
-        ];
-    }
+        ],
+    ];
+}
 
     public function actionIndex()
     {
@@ -109,6 +117,69 @@ class UsuariosController extends Controller
 
         throw new NotFoundHttpException('Usuario no encontrado.');
     }
+
+
+public function actionPerfil()
+{
+    if (Yii::$app->user->isGuest) {
+        throw new ForbiddenHttpException();
+    }
+
+    $model = Yii::$app->user->identity;
+
+    return $this->render('perfil', [
+        'model' => $model
+    ]);
+}
+
+
+
+public function actionCambiarPassword()
+{
+    if (Yii::$app->user->isGuest) {
+        throw new ForbiddenHttpException();
+    }
+
+    $model = Usuarios::findOne(Yii::$app->user->id);
+
+    if (!$model) {
+        throw new NotFoundHttpException('Usuario no encontrado');
+    }
+
+    if (Yii::$app->request->isPost) {
+
+        $actual = Yii::$app->request->post('actual');
+        $nueva = Yii::$app->request->post('nueva');
+        $confirmar = Yii::$app->request->post('confirmar');
+
+        // 🔐 validar clave actual
+        if (!Yii::$app->security->validatePassword($actual, $model->clave)) {
+            Yii::$app->session->setFlash('error', 'Contraseña actual incorrecta');
+            return $this->refresh();
+        }
+
+        // 🔁 validar coincidencia
+        if ($nueva !== $confirmar) {
+            Yii::$app->session->setFlash('error', 'Las contraseñas no coinciden');
+            return $this->refresh();
+        }
+
+        // 🔒 guardar nueva clave encriptada
+        $model->clave = Yii::$app->security->generatePasswordHash($nueva);
+
+        $model->save(false);
+
+        Yii::$app->session->setFlash('success', 'Contraseña actualizada correctamente');
+        return $this->refresh();
+    }
+
+    return $this->render('cambiar-password', [
+        'model' => $model
+    ]);
+}
+
+
+
 
 
 }

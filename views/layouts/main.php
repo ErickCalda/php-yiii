@@ -101,7 +101,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <!-- Laboratorios -->
     <li class="nav-item mb-1">
         <a class="nav-link  d-flex align-items-center collapsed"style="color:#6366F1;" data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>" role="button">
-            <i class="bi  bi-building"  style="color:#6366F1;"></i><span class="link-text ms-2">G.Laboratorio</span>
+            <i class="bi  bi-building"  style="color:#6366F1;"></i><span class="link-text ms-2">Laboratorio</span>
             
         </a>
         
@@ -110,7 +110,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <!-- Equipos -->
     <li class="nav-item mb-1">
         <a class="nav-link d-flex align-items-center collapsed" style="color:#6366F1;" data-bs-toggle=""  href="<?= \yii\helpers\Url::to(['/equipos/index']) ?>" role="button">
-            <i class="bi  bi-tools"  style="color:#6366F1;"></i><span class="link-text ms-2">G.Equipos</span>
+            <i class="bi  bi-tools"  style="color:#6366F1;"></i><span class="link-text ms-2">Equipos</span>
           
         </a>
        
@@ -119,78 +119,71 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
     <!-- Materiales -->
     <li class="nav-item mb-1">
         <a class="nav-link  d-flex align-items-center collapsed" style="color:#6366F1;"data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/materiales/index']) ?>" role="button">
-            <i class="bi  bi-box"  style="color:#6366F1;"></i><span class="link-text ms-2">G.Materiales</span>
+            <i class="bi  bi-box"  style="color:#6366F1;"></i><span class="link-text ms-2">Materiales</span>
            
         </a>
         
     </li>
 
 <!-- Clases Programadas -->
-<li class="nav-item mb-1">
-    <a class="nav-link d-flex align-items-center collapsed"
-       style="color:#6366F1;"
-       data-bs-toggle="collapse"
-       href="#collapseClases"
-       role="button">
-
-        <i class="bi bi-calendar3" style="color:#6366F1;"></i>
-        <span class="link-text ms-2">Clases</span>
-        <i class="bi bi-chevron-down ms-auto" style="color:#6366F1;"></i>
-    </a>
-
-    <ul class="collapse nav flex-column ms-3" id="collapseClases">
-
-        <li class="nav-item">
+     <li class="nav-item">
             <a class="nav-link d-flex align-items-center"
                style="color:#6366F1;"
                href="<?= \yii\helpers\Url::to(['/clases-programadas/index']) ?>">
 
-                <i class="bi bi-journal-bookmark"
-                   style="color:#6366F1;"></i>
-
-                <span class="link-text ms-2">
-                    Gestionar
-                </span>
+              <i class="bi bi-calendar3" style="color:#6366F1;"></i>
+        <span class="link-text ms-2">Clases</span>
+       
             </a>
         </li>
 
 
-    </ul>
-</li>
+<?php
+$isAdmin = !Yii::$app->user->isGuest 
+    && Yii::$app->user->identity->rol->nombre === 'admin';
+?>
 
+<?php if ($isAdmin): ?>
     <!-- Usuarios -->
     <li class="nav-item mb-1">
-        <a class="nav-link  d-flex align-items-center "  style="color:#6366F1;"data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/usuarios/index']) ?>"role="button">
-            <i class="bi  bi-person-circle"  style="color:#6366F1;"></i><span class="link-text ms-2">G. de Usuarios</span>
-           
+        <a class="nav-link d-flex align-items-center"
+           style="color:#6366F1;"
+           href="<?= \yii\helpers\Url::to(['/usuarios/index']) ?>">
+
+            <i class="bi bi-person-circle" style="color:#6366F1;"></i>
+            <span class="link-text ms-2">Usuarios</span>
+
         </a>
-        
     </li>
 <?php endif; ?>
+<?php endif; ?>
 
-<!-- Cuenta -->
-<li class="nav-item mb-1">
-    <a class="nav-link  d-flex align-items-center collapsed" style="color:#6366F1;" data-bs-toggle="collapse" href="#collapseCuenta" role="button">
-        <i class="bi  bi-person-lock"  style="color:#6366F1;"></i><span class="link-text ms-2">Cuenta</span>
-        <i class="bi  bi-chevron-down ms-auto"  style="color:#6366F1;"></i>
-    </a>
-    <ul class="collapse nav flex-column ms-3" id="collapseCuenta">
-        <?php if (Yii::$app->user->isGuest): ?>
-            <li class="nav-item">
-                <a class="nav-link  d-flex align-items-center" style="color:#6366F1;" href="<?= \yii\helpers\Url::to(['/site/login']) ?>">
-                    <i class="bi  bi-box-arrow-in-right"  style="color:#6366F1;"></i><span class="link-text ms-2" >Login</span>
-                </a>
-            </li>
-        <?php else: ?>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center" style="color:#6366F1;" href="<?= \yii\helpers\Url::to(['/site/logout']) ?>" data-method="post">
-                    <i class="bi  bi-box-arrow-right"  style="color:#6366F1;"></i>
-                    <span class="link-text   ms-2" style="color:#6366F1;">Logout
-                </a>
-            </li>
-        <?php endif; ?>
-    </ul>
-</li>
+<?php if (Yii::$app->user->isGuest): ?>
+
+    <!-- LOGIN -->
+    <li class="nav-item mb-1">
+        <a class="nav-link d-flex align-items-center"
+           href="<?= \yii\helpers\Url::to(['/site/login']) ?>">
+
+            <i class="bi bi-box-arrow-in-right"></i>
+            <span class="link-text ms-2">Login</span>
+        </a>
+    </li>
+
+<?php else: ?>
+
+    <!-- LOGOUT -->
+    <li class="nav-item mb-1">
+        <a class="nav-link d-flex align-items-center"
+           href="<?= \yii\helpers\Url::to(['/site/logout']) ?>"
+           data-method="post">
+
+            <i class="bi bi-box-arrow-right"></i>
+            <span class="link-text ms-2">Logout</span>
+        </a>
+    </li>
+
+<?php endif; ?>
 
 
 </ul>
@@ -236,23 +229,68 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
 <!-- Sección del usuario en la parte superior derecha -->
 <?php if (!Yii::$app->user->isGuest): ?>
-    <div class="user-info position-absolute text-white" style="top: 10px; right: 20px; font-family: 'Roboto', sans-serif;">
-        <i class="bi bi-person-circle" style="font-size: 24px;"></i>
 
-        <span style="font-size: 24px; margin-left: 8px;">
-            <?= Html::encode(Yii::$app->user->identity->nombre ?? 'Usuario desconocido') ?>
+<?php
+$user = Yii::$app->user->identity;
+$isAdmin = method_exists($user, 'isAdmin') ? $user->isAdmin() : ($user->rol->nombre === 'admin');
+?>
 
-            <?php if (!Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin()): ?>
-                <span class="badge bg-danger" style="margin-left: 10px; font-size: 12px; font-weight: 500; padding: 2px 8px;">
-                    Administrador
+<div class="user-topbar">
+
+    <div class="user-dropdown" id="userDropdown">
+
+        <!-- BOTÓN -->
+        <div class="user-trigger">
+
+            <div class="user-avatar">
+                <?= strtoupper(substr($user->nombre ?? 'U', 0, 1)) ?>
+            </div>
+
+            <div class="user-meta">
+                <span class="user-name">
+                    <?= Html::encode($user->nombre ?? 'Usuario') ?>
                 </span>
-            <?php else: ?>
-                <span class="badge bg-secondary" style="margin-left: 10px; font-size: 12px; font-weight: 500; padding: 2px 8px;">
-                    Usuario
+
+                <span class="user-role <?= $isAdmin ? 'admin' : '' ?>">
+                    <?= $isAdmin ? 'Administrador' : 'Usuario' ?>
                 </span>
-            <?php endif; ?>
-        </span>
+            </div>
+
+            <i class="bi bi-chevron-down dropdown-arrow"></i>
+        </div>
+
+        <!-- MENÚ -->
+        <div class="user-menu">
+
+            <!-- PERFIL REAL -->
+            <a href="<?= \yii\helpers\Url::to(['/usuarios/perfil']) ?>" class="menu-item">
+                <i class="bi bi-person"></i>
+                <span>Mi perfil</span>
+            </a>
+
+            <!-- CONFIGURACIÓN (opcional futuro) -->
+            <a href="#" class="menu-item">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+            <div class="menu-divider"></div>
+
+            <!-- LOGOUT -->
+            <a href="<?= \yii\helpers\Url::to(['/site/logout']) ?>"
+               data-method="post"
+               class="menu-item danger">
+
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Cerrar sesión</span>
+            </a>
+
+        </div>
+
     </div>
+
+</div>
+
 <?php endif; ?>
 </main>
 
@@ -264,7 +302,26 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", function(){
 
+    const dropdown = document.getElementById("userDropdown");
+
+    if(!dropdown) return;
+
+    const trigger = dropdown.querySelector(".user-trigger");
+
+    trigger.addEventListener("click", function(e){
+        e.stopPropagation();
+        dropdown.classList.toggle("open");
+    });
+
+    document.addEventListener("click", function(){
+        dropdown.classList.remove("open");
+    });
+
+});
+</script>
 
 
     <?php
@@ -275,12 +332,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position'
 
  <div id="cursor-shadow"></div>
 
- <div id="toast" class="toast hidden">
-    <div class="toast-content">
-        <span id="toast-icon">⚠️</span>
-        <span id="toast-message"></span>
-    </div>
-</div>
 
 
 <script>
