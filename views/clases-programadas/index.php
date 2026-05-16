@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\Pjax;
+use yii\helpers\Url;
 
 $this->title = 'Horario de Clases';
 $this->params['breadcrumbs'][] = $this->title;
@@ -27,7 +28,7 @@ $dias = [
 ];
 ?>
 
-<div class="schedule-page">
+<<div class="schedule-page">
 
     <!-- HERO -->
     <div class="hero-panel">
@@ -39,9 +40,28 @@ $dias = [
         </div>
 
         <div class="cp-actions">
-            <?= Html::a('+ Curso', ['cursos/create'], ['class' => 'btn-soft']) ?>
-            <?= Html::a('+ Materia', ['materias/create'], ['class' => 'btn-soft']) ?>
-            <?= Html::a('+ Período', ['periodos-academicos/create'], ['class' => 'btn-soft']) ?>
+
+            <button type="button"
+                    class="drawer-trigger btn-soft"
+                    data-title="Nuevo Curso"
+                    data-url="<?= Url::to(['/cursos/create']) ?>">
+                + Curso
+            </button>
+
+            <button type="button"
+                    class="drawer-trigger btn-soft"
+                    data-title="Nueva Materia"
+                    data-url="<?= Url::to(['/materias/create']) ?>">
+                + Materia
+            </button>
+
+            <button type="button"
+                    class="drawer-trigger btn-soft"
+                    data-title="Nuevo Período"
+                    data-url="<?= Url::to(['/periodos-academicos/create']) ?>">
+                + Período
+            </button>
+
         </div>
 
     </div>
@@ -72,9 +92,14 @@ $dias = [
                                     <?= $m->usuarios->apellido ?? '' ?>
                                 </div>
 
-                                <div class="class-status <?= $m->estado ? 'on' : 'off' ?>">
-                                    <?= $m->estado ? 'Activo' : 'Inactivo' ?>
-                                </div>
+                                    <div class="class-status 
+                                        <?= $m->estado == 0 ? 'progress' : ($m->estado == 1 ? 'on' : 'cancel') ?>">
+                                        
+                                        <?= $m->estado == 0 
+                                            ? 'En progreso' 
+                                            : ($m->estado == 1 ? 'Activo' : 'Cancelado') ?>
+                                            
+                                    </div>
 
                             </div>
 
@@ -98,14 +123,22 @@ $dias = [
                             <!-- ACTIONS -->
                             <div class="class-actions">
 
-                                <?= Html::a('Ver', ['view', 'id' => $m->id]) ?>
+                                <?php if ($m->puedeEditar()): ?>
 
-                                <?= Html::a('Editar', ['update', 'id' => $m->id]) ?>
+                                    <?= Html::a('Ver', ['view', 'id' => $m->id]) ?>
 
-                                <?= Html::a('Eliminar', ['delete', 'id' => $m->id], [
-                                    'data-method' => 'post',
-                                    'data-confirm' => '¿Eliminar clase?'
-                                ]) ?>
+                                    <?= Html::a('Editar', ['update', 'id' => $m->id]) ?>
+
+                                    <?= Html::a(
+                                        'Eliminar',
+                                        ['delete', 'id' => $m->id],
+                                        [
+                                            'class' => 'delete-class',
+                                            'data-pjax' => '0'
+                                        ]
+                                    ) ?>
+
+                                <?php endif; ?>
 
                             </div>
 
@@ -136,504 +169,1015 @@ $dias = [
 ]) ?>
 
 
-<style>
+<div class="drawer-overlay"></div>
+
+<div class="drawer-panel">
+
+    <div class="drawer-header">
+        <h3 id="drawer-title">Nuevo Registro</h3>
+
+        <button type="button" class="drawer-close">
+            ✕
+        </button>
+    </div>
+
+    <div id="drawer-body">
+
+        <!-- aquí luego cargaremos el form con AJAX -->
+
+    </div>
+
+</div>
 
 
+
+
+
+<?php
+
+$this->registerJs("
+
+/* =========================
+   TOGGLE MENU CREAR
+========================= */
+$(document).on('click', '.create-toggle', function(e){
+
+    e.stopPropagation();
+
+    $('.create-menu').toggleClass('show');
+
+});
 
 
 /* =========================
-   HORARIO APPLE STYLE FINAL
-   (100% tu paleta + limpio)
+   ABRIR DRAWER + CARGAR FORM
 ========================= */
+$(document).on('click', '.drawer-trigger', function(){
+
+    let title = $(this).data('title');
+    let url   = $(this).data('url');
+
+    $('#drawer-title').text(title);
+
+    $('#drawer-body').html(
+        '<div class=\"drawer-loading\">Cargando...</div>'
+    );
+
+    $('.drawer-overlay').addClass('show');
+    $('.drawer-panel').addClass('show');
+
+    $('.create-menu').removeClass('show');
+
+    $.get(url, function(response){
+
+        $('#drawer-body').html(response);
+
+    });
+
+});
+
+
+/* =========================
+   CERRAR DRAWER
+========================= */
+$(document).on('click', '.drawer-close, .drawer-overlay', function(){
+
+    $('.drawer-overlay').removeClass('show');
+    $('.drawer-panel').removeClass('show');
+
+});
+
+
+/* =========================
+   CERRAR DROPDOWN AFUERA
+========================= */
+$(document).on('click', function(e){
+
+    if(!$(e.target).closest('.create-dropdown').length){
+
+        $('.create-menu').removeClass('show');
+
+    }
+
+});
+
+
+/* =========================
+   GUARDAR FORM AJAX
+========================= */
+$(document).on('beforeSubmit', '#drawer-body form', function(e){
+
+    e.preventDefault();
+
+    let form = $(this);
+
+    $.post(
+
+        form.attr('action'),
+        form.serialize(),
+
+        function(response){
+
+            /*
+            Formato esperado:
+            id|nombre|tipo|mensaje|estado
+            */
+
+            if(response.includes('|')){
+
+                let parts = response.split('|');
+
+                let id      = parts[0];
+                let nombre  = parts[1];
+                let tipo    = parts[2];
+                let mensaje = parts[3];
+                let estado  = parts[4];
+
+
+                /* CERRAR DRAWER */
+                $('.drawer-overlay').removeClass('show');
+                $('.drawer-panel').removeClass('show');
+
+
+                /* MOSTRAR ALERTA */
+                showToast(mensaje, estado);
+
+
+                /* ACTUALIZAR SELECTS */
+                if(tipo === 'curso'){
+
+                    let select = $('#clasesprogramadas-curso_id');
+
+                    if(select.length){
+
+                        select.append(
+                            new Option(nombre, id, true, true)
+                        );
+
+                        select.trigger('change');
+
+                    }
+
+                }
+
+
+                if(tipo === 'materia'){
+
+                    let select = $('#clasesprogramadas-materia_id');
+
+                    if(select.length){
+
+                        select.append(
+                            new Option(nombre, id, true, true)
+                        );
+
+                        select.trigger('change');
+
+                    }
+
+                }
+
+
+                if(tipo === 'periodo'){
+
+                    let select = $('#clasesprogramadas-periodo_id');
+
+                    if(select.length){
+
+                        select.append(
+                            new Option(nombre, id, true, true)
+                        );
+
+                        select.trigger('change');
+
+                    }
+
+                }
+
+            }else{
+
+                /*
+                Si hay errores de validación,
+                Yii devuelve el form con errores
+                */
+                $('#drawer-body').html(response);
+
+            }
+
+        }
+
+    );
+
+    return false;
+
+});
+
+");
+?>
+
+
+
+
+<?php
+
+$this->registerJs("
+
+/* SUBMIT AJAX DRAWER */
+$(document).on('beforeSubmit', '#drawer-body form', function(e){
+
+    e.preventDefault();
+
+    let form = $(this);
+
+    $.ajax({
+
+        url: form.attr('action'),
+        type: form.attr('method'),
+        data: form.serialize(),
+
+        success: function(response){
+
+            // si devuelve nuevamente un form = hubo error
+            if($(response).find('form').length){
+
+                let html = $(response).find('form').closest('div');
+
+                $('#drawer-body').html(html);
+
+                return;
+            }
+
+            // éxito
+            $('.drawer-overlay').removeClass('show');
+            $('.drawer-panel').removeClass('show');
+
+            // opcional limpiar
+            $('#drawer-body').html('');
+
+            // notificación rápida
+            alert('Guardado correctamente');
+
+        },
+
+        error:function(){
+            alert('Error al guardar');
+        }
+
+    });
+
+    return false;
+
+});
+
+");
+?>
+
+<?php
+
+$this->registerJs("
+
+// =========================
+// ELIMINAR CON ALERTA02
+// =========================
+$(document).on('click', '.delete-class', function(e){
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    let btn = $(this);
+    let url = btn.attr('href');
+
+    $.ajax({
+
+        url: url,
+        type: 'POST',
+
+        data:{
+            _csrf: yii.getCsrfToken()
+        },
+
+        success:function(res){
+
+            showToast(
+                res.message,
+                res.ok ? 'success' : 'error'
+            );
+
+            if(res.ok){
+
+                btn.closest('.class-block').fadeOut(250, function(){
+
+                    $(this).remove();
+
+                });
+
+            }
+
+        },
+
+        error:function(){
+
+            showToast(
+                'Error de conexión.',
+                'error'
+            );
+
+        }
+
+    });
+
+    return false;
+
+});
+
+");
+?>
+
+<style>
+
+/* ==========================================
+   EJECUTIVA01 — HORARIO CORPORATIVO REAL
+========================================== */
 
 :root{
-    --bg:#F8FAFC;
-    --surface:rgba(255,255,255,.75);
-    --card:#FFFFFF;
 
-    --text:#0F172A;
-    --muted:#64748B;
+    --bg:#EEF2F6;
+    --surface:#FFFFFF;
 
-    --line:#E2E8F0;
+    --navy:#1F2937;
+    --navy-2:#111827;
 
-    --indigo:#6366F1;
-    --indigo-dark:#4F46E5;
+    --border:#CBD5E1;
+    --border-dark:#94A3B8;
 
-    --success:#16A34A;
-    --danger:#DC2626;
+    --text:#111827;
+    --muted:#6B7280;
 
-    --shadow:0 10px 25px rgba(15,23,42,.06);
-    --shadow-soft:0 4px 12px rgba(15,23,42,.04);
+    --accent:#334155;
+
+    --success-bg:#ECFDF3;
+    --success-text:#166534;
+
+    --warning-bg:#FFF7ED;
+    --warning-text:#9A3412;
+
+    --danger-bg:#FEF2F2;
+    --danger-text:#991B1B;
+
 }
 
-/* BASE */
+/* PAGE */
 .schedule-page{
-    padding:18px;
-    background:var(--bg);
-    min-height:100vh;
-    font-family:system-ui,-apple-system,sans-serif;
-}
 
-/* HERO */
-.hero-panel{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:16px;
+    max-width:1800px;
+    margin:auto;
 
     padding:20px;
-    margin-bottom:16px;
 
-    background:var(--surface);
-    backdrop-filter:blur(12px);
+    background:var(--bg);
 
-    border:1px solid var(--line);
-    border-radius:22px;
+    font-family:"Segoe UI", system-ui;
+    color:var(--text);
 
-    box-shadow:var(--shadow-soft);
+    min-height:100vh;
+
+}
+
+
+/* ==========================================
+   TOP PANEL
+========================================== */
+
+.hero-panel{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+
+    gap:20px;
+
+    margin-bottom:20px;
+
+    padding:22px;
+
+    background:#FFFFFF;
+
+    border:1px solid var(--border-dark);
+    border-radius:5px;
+
+}
+
+.mini-badge{
+
+    display:inline-block;
+
+    padding:5px 10px;
+
+    background:#E5E7EB;
+
+    border:1px solid #D1D5DB;
+    border-radius:4px;
+
+    font-size:11px;
+    font-weight:700;
+
+    color:#374151;
+
+    margin-bottom:8px;
+
 }
 
 .hero-panel h1{
+
     margin:0;
+
     font-size:28px;
-    font-weight:900;
-    color:var(--text);
-    letter-spacing:-.02em;
+    font-weight:700;
+
+    color:var(--navy);
+
 }
 
 .hero-panel p{
-    margin:6px 0 0;
+
+    margin:5px 0 0;
+
     font-size:13px;
+
     color:var(--muted);
+
 }
 
-/* BADGE */
-.mini-badge{
-    display:inline-block;
-    padding:5px 10px;
-    margin-bottom:8px;
 
-    border-radius:999px;
-    background:#EEF2FF;
-    color:var(--indigo);
+/* ==========================================
+   ACTIONS
+========================================== */
 
-    font-size:11px;
-    font-weight:800;
-}
-
-/* BOTONES */
 .cp-actions{
+
     display:flex;
     gap:8px;
     flex-wrap:wrap;
+
 }
 
 .btn-soft{
-    padding:9px 13px;
-    border-radius:12px;
-    border:1px solid var(--line);
 
-    background:#fff;
-    color:var(--text);
+    border:1px solid #AAB4C0;
+    border-radius:4px;
+
+    background:#F8FAFC;
+
+    padding:10px 16px;
+
+    cursor:pointer;
 
     font-size:12px;
-    font-weight:800;
-    text-decoration:none;
+    font-weight:700;
 
-    transition:.2s ease;
+    color:#1F2937;
+
+    transition:.15s ease;
+
 }
 
 .btn-soft:hover{
-    transform:translateY(-1px);
-    box-shadow:var(--shadow-soft);
+
+    background:#E2E8F0;
+
 }
 
-/* GRID */
+
+/* ==========================================
+   GRID HORARIO
+========================================== */
+
 .schedule-grid{
+
     display:grid;
-    grid-template-columns:repeat(6,minmax(170px,1fr));
-    gap:10px;
-    align-items:start;
+
+    grid-template-columns:repeat(6, minmax(180px,1fr));
+
+    gap:12px;
+
+    overflow-x:auto;
+
+    padding-bottom:4px;
+
 }
 
-/* DIA */
+
+/* ==========================================
+   COLUMNA DEL DÍA
+========================================== */
+
 .day-column{
-    background:var(--surface);
-    backdrop-filter:blur(10px);
 
-    border:1px solid var(--line);
-    border-radius:18px;
+    background:#F8FAFC;
 
-    padding:10px;
+    border:1px solid #BFC9D4;
+    border-radius:5px;
+
+    overflow:hidden;
+
+    min-height:700px;
+
 }
 
 .day-header{
+
+    background:#2C3E50;
+
+    color:#FFFFFF;
+
+    padding:12px 14px;
+
     font-size:12px;
-    font-weight:900;
-    color:var(--indigo);
+    font-weight:700;
 
-    margin-bottom:8px;
-    padding-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
 
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid #1E293B;
+
 }
 
-/* CLASE (ULTRA COMPACTO) */
+
+/* ==========================================
+   BLOQUE DE CLASE
+========================================== */
+
 .class-block{
-    background:#fff;
-    border:1px solid var(--line);
-    border-left:3px solid var(--indigo);
 
-    border-radius:12px;
+    background:#FFFFFF;
 
-    padding:7px;
-    margin-bottom:6px;
+    border:1px solid #D6DEE8;
+    border-radius:5px;
 
-    transition:.18s ease;
+    margin:8px;
+    padding:10px;
+
+    transition:.15s ease;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.8),
+        0 1px 2px rgba(0,0,0,.04);
+
 }
 
 .class-block:hover{
-    transform:translateY(-1px);
-    box-shadow:var(--shadow-soft);
+
+    border-color:#94A3B8;
+
 }
 
-/* TOP */
+
+/* ==========================================
+   TOP INFO
+========================================== */
+
 .class-top{
+
     display:flex;
+
     justify-content:space-between;
-    gap:6px;
-    margin-bottom:4px;
+    align-items:flex-start;
+
+    gap:8px;
+
+    margin-bottom:8px;
+
 }
 
 .class-name{
-    font-size:10px;
-    font-weight:900;
-    color:var(--text);
-    line-height:1.1;
-    max-width:90px;
+
+    font-size:11px;
+    font-weight:700;
+
+    line-height:1.3;
+
+    color:#111827;
+
 }
 
-/* ESTADO */
+
+/* ==========================================
+   ESTADOS
+========================================== */
+
 .class-status{
-    padding:2px 6px;
-    border-radius:999px;
-    font-size:9px;
-    font-weight:900;
+
+    display:inline-flex;
+
+    align-items:center;
+    justify-content:center;
+
+    min-width:100px;
+
+    padding:4px 10px;
+
+    border-radius:4px;
+
+    white-space:nowrap;
+
+    font-size:10px;
+    font-weight:700;
+
+    flex-shrink:0;
+
+}
+
+.class-status.progress{
+
+    background:var(--warning-bg);
+    color:var(--warning-text);
+
 }
 
 .class-status.on{
-    background:#ECFDF5;
-    color:var(--success);
+
+    background:var(--success-bg);
+    color:var(--success-text);
+
 }
 
-.class-status.off{
-    background:#FEF2F2;
-    color:var(--danger);
+.class-status.cancel{
+
+    background:var(--danger-bg);
+    color:var(--danger-text);
+
 }
 
-/* =========================
-   HORA MINIMAL PREMIUM
-========================= */
+
+/* ==========================================
+   HORA
+========================================== */
+
 .class-time{
-    display:inline-block;
 
-    padding:3px 7px;
-    margin-bottom:5px;
+    display:block;
 
-    border-radius:8px;
+    background:#F1F5F9;
 
-    font-size:10px;
-    font-weight:800;
-    letter-spacing:-.01em;
+    border:1px solid #CBD5E1;
+    border-radius:4px;
 
-    color:var(--indigo);
-    background:#EEF2FF;
+    text-align:center;
+
+    padding:6px;
+
+    margin-bottom:8px;
+
+    font-size:11px;
+    font-weight:700;
+
+    color:#1E293B;
+
 }
 
-/* INFO */
+
+/* ==========================================
+   INFO
+========================================== */
+
 .class-title{
-    font-size:11px;
-    font-weight:900;
-    color:var(--text);
-    line-height:1.15;
+
+    font-size:12px;
+    font-weight:700;
+
+    color:#111827;
+
+    margin-bottom:4px;
+
 }
 
 .class-sub{
-    font-size:9.5px;
-    color:var(--muted);
+
+    font-size:11px;
+
+    color:#475569;
+
+    margin-bottom:4px;
+
 }
 
 .class-meta{
-    font-size:9px;
-    color:var(--muted);
+
+    font-size:11px;
+
+    color:#64748B;
+
+    border-top:1px solid #EDF2F7;
+
+    padding-top:6px;
+
 }
 
-/* ACCIONES */
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
 .class-actions{
+
     display:grid;
+
     grid-template-columns:repeat(3,1fr);
-    gap:3px;
-    margin-top:6px;
+
+    gap:4px;
+
+    margin-top:10px;
+
 }
 
 .class-actions a{
+
+    text-decoration:none;
+
     text-align:center;
-    padding:4px;
 
-    border-radius:7px;
-    border:1px solid var(--line);
-
-    font-size:9px;
-    font-weight:800;
+    padding:6px 4px;
 
     background:#F8FAFC;
-    color:var(--text);
-    text-decoration:none;
+
+    border:1px solid #CBD5E1;
+    border-radius:4px;
+
+    font-size:10px;
+    font-weight:700;
+
+    color:#1E293B;
+
+    transition:.15s ease;
+
 }
 
 .class-actions a:hover{
-    background:#EEF2FF;
-    color:var(--indigo);
+
+    background:#E2E8F0;
+
 }
 
-/* VACIO */
+
+/* ==========================================
+   EMPTY
+========================================== */
+
 .empty-slot{
+
+    padding:25px 10px;
+
     text-align:center;
-    padding:14px 0;
-    font-size:11px;
-    color:var(--muted);
+
+    font-size:12px;
+
+    color:#64748B;
+
 }
 
-/* FAB */
+
+/* ==========================================
+   FAB
+========================================== */
+
 .cp-fab{
+
     position:fixed;
+
     right:20px;
-    bottom:20px;
+    bottom:40px;
 
-    padding:13px 16px;
-    border-radius:14px;
+    padding:12px 18px;
 
-    background:var(--indigo);
-    color:#fff;
+    background:#1F2937;
 
-    font-size:13px;
-    font-weight:900;
+    border:1px solid #111827;
+    border-radius:5px;
+
+    color:white;
+
     text-decoration:none;
 
-    box-shadow:0 10px 25px rgba(99,102,241,.25);
+    font-size:13px;
+    font-weight:700;
+
 }
 
 .cp-fab:hover{
-    background:var(--indigo-dark);
+
+    background:#111827;
+
 }
 
-/* RESPONSIVE */
-@media(max-width:1400px){
-    .schedule-grid{grid-template-columns:repeat(3,1fr);}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media(max-width:1200px){
+
+    .schedule-grid{
+
+        grid-template-columns:repeat(6, 190px);
+
+    }
+
 }
 
 @media(max-width:900px){
-    .schedule-grid{grid-template-columns:repeat(2,1fr);}
-}
-
-@media(max-width:600px){
-    .schedule-grid{grid-template-columns:1fr;}
-}
-
-
-
-
-
-
-
-
-
-
-
-/* =====================================
-   RESPONSIVE PERFECTO SIN PERDER HORARIO
-   REEMPLAZA SOLO MEDIA QUERIES + GRID
-===================================== */
-
-/* GRID BASE */
-.schedule-grid{
-    display:grid;
-    grid-template-columns:repeat(6,minmax(170px,1fr));
-    gap:10px;
-    align-items:start;
-    overflow-x:auto;
-    padding-bottom:4px;
-}
-
-/* SCROLL BONITO */
-.schedule-grid::-webkit-scrollbar{
-    height:8px;
-}
-
-.schedule-grid::-webkit-scrollbar-track{
-    background:#E2E8F0;
-    border-radius:999px;
-}
-
-.schedule-grid::-webkit-scrollbar-thumb{
-    background:#CBD5E1;
-    border-radius:999px;
-}
-
-/* =============================
-   DESKTOP GRANDE
-============================= */
-@media (min-width:1600px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,1fr);
-    }
-
-    .schedule-page{
-        padding:22px;
-    }
-
-}
-
-/* =============================
-   LAPTOP NORMAL
-============================= */
-@media (max-width:1399px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,minmax(190px,1fr));
-    }
-
-}
-
-/* =============================
-   TABLET HORIZONTAL
-   mantiene forma horario
-============================= */
-@media (max-width:1190px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,minmax(180px,1fr));
-    }
 
     .hero-panel{
-        flex-wrap:wrap;
-        align-items:flex-start;
-    }
 
-}
-
-/* =============================
-   TABLET VERTICAL
-   scroll horizontal elegante
-============================= */
-@media (max-width:980px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,180px);
-    }
-
-    .schedule-page{
-        padding:14px;
-    }
-
-    .hero-panel h1{
-        font-size:24px;
-    }
-
-}
-
-/* =============================
-   MOBILE GRANDE
-   sigue pareciendo horario real
-============================= */
-@media (max-width:768px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,165px);
-        gap:8px;
-    }
-
-    .hero-panel{
-        padding:16px;
-        border-radius:18px;
-    }
-
-    .btn-soft{
-        padding:8px 12px;
-        font-size:11px;
-    }
-
-    .cp-fab{
-        right:14px;
-        bottom:14px;
-    }
-
-}
-
-/* =============================
-   MOBILE PEQUEÑO
-============================= */
-@media (max-width:560px){
-
-    .schedule-grid{
-        grid-template-columns:repeat(6,155px);
-        gap:7px;
-    }
-
-    .schedule-page{
-        padding:10px;
-    }
-
-    .hero-panel{
         flex-direction:column;
         align-items:flex-start;
-        gap:12px;
-    }
 
-    .hero-panel h1{
-        font-size:21px;
-    }
-
-    .hero-panel p{
-        font-size:12px;
-    }
-
-    .cp-actions{
-        width:100%;
-    }
-
-    .btn-soft{
-        flex:1;
-        text-align:center;
-    }
-
-    .cp-fab{
-        left:10px;
-        right:10px;
-        bottom:10px;
-        text-align:center;
-        border-radius:14px;
     }
 
 }
 
-/* =============================
-   MOBILE MINI
-============================= */
-@media (max-width:390px){
+@media(max-width:768px){
 
-    .schedule-grid{
-        grid-template-columns:repeat(6,145px);
+    .schedule-page{
+
+        padding:12px;
+
     }
 
     .hero-panel h1{
-        font-size:19px;
+
+        font-size:22px;
+
     }
 
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================
+   EJECUTIVA01 — DRAWER CORPORATIVO
+========================================== */
+
+/* OVERLAY */
+.drawer-overlay{
+
+    position:fixed;
+    inset:0;
+
+    background:rgba(15,23,42,.35);
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.18s ease;
+
+    z-index:2000;
+
+}
+
+.drawer-overlay.show{
+
+    opacity:1;
+    visibility:visible;
+
+}
+
+
+/* PANEL */
+.drawer-panel{
+
+    position:fixed;
+
+    top:0;
+    right:0;
+
+    width:520px;
+    max-width:95%;
+
+    height:100vh;
+
+    background:#F8FAFC;
+
+    border-left:1px solid #94A3B8;
+
+    box-shadow:
+        -8px 0 20px rgba(15,23,42,.08);
+
+    transform:translateX(100%);
+
+    transition:.22s ease;
+
+    z-index:2001;
+
+    display:flex;
+    flex-direction:column;
+
+    font-family:"Segoe UI", system-ui;
+
+}
+
+.drawer-panel.show{
+
+    transform:translateX(0);
+
+}
+
+
+/* HEADER */
+.drawer-header{
+
+    display:flex;
+
+    justify-content:space-between;
+    align-items:center;
+
+    padding:18px 20px;
+
+    background:#1F2937;
+
+    border-bottom:1px solid #111827;
+
+}
+
+.drawer-header h3{
+
+    margin:0;
+
+    font-size:14px;
+    font-weight:700;
+
+    color:#FFFFFF;
+
+    letter-spacing:.3px;
+
+}
+
+
+/* CLOSE */
+.drawer-close{
+
+    width:34px;
+    height:34px;
+
+    border:1px solid #475569;
+    border-radius:4px;
+
+    background:#374151;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:14px;
+    font-weight:700;
+
+    transition:.15s ease;
+
+}
+
+.drawer-close:hover{
+
+    background:#111827;
+
+}
+
+
+/* BODY */
+#drawer-body{
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding:20px;
+
+    background:#FFFFFF;
+
+}
+
+
+/* LOADING */
+.drawer-loading{
+
+    text-align:center;
+
+    padding:40px 20px;
+
+    color:#64748B;
+
+    font-size:13px;
+    font-weight:600;
+
+}
 
 
 </style>

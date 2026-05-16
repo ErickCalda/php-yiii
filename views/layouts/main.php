@@ -54,6 +54,8 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 <?php $this->beginBody() ?>
 
 
+<?php if (!Yii::$app->user->isGuest): ?>
+
 <nav id="sidebar" class=" text-white " style="width:250px; position:fixed; padding-top:20px; transition: width .2s ease; z-index: 9999;">
 
 <div class="px-3 mb-4 d-flex justify-content-start align-items-center">
@@ -81,13 +83,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
 
 
-    <!-- Home -->
-<li class="nav-item mb-1">
-    <a class="nav-link  d-flex align-items-center" style="color:#6366F1;" href="<?= \yii\helpers\Url::to(['/site/index']) ?>">
-        <i class="bi  bi-house-door" style="color:#6366F1;"></i>
-        <span class="link-text ms-2">Home</span>
-    </a>
-</li>
+
 
 <?php if (!Yii::$app->user->isGuest): ?>
     <!-- Bitacora -->
@@ -107,23 +103,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         
     </li>
 
-    <!-- Equipos -->
-    <li class="nav-item mb-1">
-        <a class="nav-link d-flex align-items-center collapsed" style="color:#6366F1;" data-bs-toggle=""  href="<?= \yii\helpers\Url::to(['/equipos/index']) ?>" role="button">
-            <i class="bi  bi-tools"  style="color:#6366F1;"></i><span class="link-text ms-2">Equipos</span>
-          
-        </a>
-       
-    </li>
 
-    <!-- Materiales -->
-    <li class="nav-item mb-1">
-        <a class="nav-link  d-flex align-items-center collapsed" style="color:#6366F1;"data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/materiales/index']) ?>" role="button">
-            <i class="bi  bi-box"  style="color:#6366F1;"></i><span class="link-text ms-2">Materiales</span>
-           
-        </a>
-        
-    </li>
 
 <!-- Clases Programadas -->
      <li class="nav-item">
@@ -194,6 +174,14 @@ $isAdmin = !Yii::$app->user->isGuest
 
 
 </nav>
+
+
+
+
+<?php endif; ?>
+
+
+
 
 <style>
 
@@ -294,6 +282,15 @@ $isAdmin = method_exists($user, 'isAdmin') ? $user->isAdmin() : ($user->rol->nom
 <?php endif; ?>
 </main>
 
+
+
+
+
+
+
+
+
+
 <!-- Añadir Google Fonts en el head -->
 <?php $this->registerCss('
     @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
@@ -339,6 +336,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/sweetalert2@11', ['position'
 </script>
 
 <script src="<?= Yii::getAlias('@web') ?>/js/toast.js"></script>
+
+
+
+<div id="toast-container"></div>
 </body>
 </html>
 <?php $this->endPage() ?>

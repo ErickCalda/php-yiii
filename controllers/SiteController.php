@@ -66,11 +66,14 @@ class SiteController extends Controller
     /**
      * Acción de inicio de página
      */
-    public function actionIndex()
-    {
-        return $this->render('index');
+public function actionIndex()
+{
+    if (Yii::$app->user->isGuest) {
+        return $this->redirect(['site/login']);
     }
 
+    return $this->redirect(['clases-programadas/index']); // o dashboard
+}
     public function actionError()
 {
     $exception = Yii::$app->errorHandler->exception;

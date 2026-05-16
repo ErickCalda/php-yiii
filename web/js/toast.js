@@ -1,28 +1,26 @@
-document.addEventListener("DOMContentLoaded", function () {
+function showToast(message, type = 'success'){
 
-    const flash = window.toastFlash;
+    let toast = $('<div class="app-toast '+type+'">'+message+'</div>');
 
-    if (!flash) return;
+    $('#toast-container').append(toast);
 
-    const toast = document.getElementById("toast");
-    const message = document.getElementById("toast-message");
-    const icon = document.getElementById("toast-icon");
+    setTimeout(function(){
 
-    message.innerText = flash.message;
+        toast.addClass('show');
 
-    // 🎨 iconos por tipo
-    const icons = {
-        success: "✅",
-        error: "❌",
-        warning: "⚠️",
-        info: "ℹ️"
-    };
+    }, 100);
 
-    icon.innerText = icons[flash.type] || "ℹ️";
 
-    toast.className = "toast show " + flash.type;
+    setTimeout(function(){
 
-    setTimeout(() => {
-        toast.className = "toast";
-    }, 3500);
-});
+        toast.removeClass('show');
+
+        setTimeout(function(){
+
+            toast.remove();
+
+        }, 400);
+
+    }, 3000);
+
+}

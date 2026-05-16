@@ -241,4 +241,68 @@ class ClasesProgramadas extends \yii\db\ActiveRecord
     {
         $this->dia_semana = self::DIA_SEMANA_VIERNES;
     }
+
+
+    public function getLaboratorio()
+{
+    return $this->hasOne(Laboratorios::class, ['id' => 'laboratorio_id']);
+}
+
+public function getMateria()
+{
+    return $this->hasOne(Materias::class, ['id' => 'materia_id']);
+}
+
+public function getCurso()
+{
+    return $this->hasOne(Cursos::class, ['id' => 'curso_id']);
+}
+
+    public function puedeGestionar()
+{
+    $usuario = Yii::$app->user->identity;
+
+    // Admin puede siempre
+    if ($usuario->rol_id == Usuarios::ROL_ADMIN) {
+        return true;
+    }
+
+    // Solo el creador
+    if ($this->docente_id != $usuario->id) {
+        return false;
+    }
+
+    // Máximo 10 minutos
+    $creado = strtotime($this->created_at);
+
+    return (time() - $creado) <= 600;
+}
+
+
+
+
+
+public function puedeEditar()
+{
+    $usuario = Yii::$app->user->identity;
+
+    // Admin siempre puede
+    if ($usuario->rol_id == \app\models\Usuarios::ROL_ADMIN) {
+        return true;
+    }
+
+    // Solo el dueño de la reserva
+    if ($this->docente_id != $usuario->id) {
+        return false;
+    }
+
+    $creado = strtotime($this->created_at);
+    $ahora  = time();
+
+    // 10 minutos = 600 segundos
+    return ($ahora - $creado) <= 600;
+}
+
+
+
 }
