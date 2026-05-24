@@ -39,6 +39,14 @@ $dias = [
             <p>Distribución semanal de clases programadas en tiempo real</p>
         </div>
 
+<?= Html::a('🖨️ Imprimir Horario', [
+    'imprimir-horario'
+], [
+    'class' => 'btn-soft',
+    'target' => '_blank',
+    'data-pjax' => 0
+]) ?>
+
         <div class="cp-actions">
 
             <button type="button"
@@ -129,14 +137,18 @@ $dias = [
 
                                     <?= Html::a('Editar', ['update', 'id' => $m->id]) ?>
 
-                                    <?= Html::a(
-                                        'Eliminar',
-                                        ['delete', 'id' => $m->id],
-                                        [
-                                            'class' => 'delete-class',
-                                            'data-pjax' => '0'
-                                        ]
-                                    ) ?>
+<?php if (Yii::$app->user->identity->rol_id == app\models\Usuarios::ROL_ADMIN): ?>
+
+    <?= Html::a(
+        'Eliminar',
+        ['delete', 'id' => $m->id],
+        [
+            'class' => 'delete-class',
+            'data-pjax' => '0'
+        ]
+    ) ?>
+
+<?php endif; ?>
 
                                 <?php endif; ?>
 
@@ -491,7 +503,15 @@ $(document).on('click', '.delete-class', function(e){
 });
 
 ");
+
+
+
 ?>
+
+
+
+
+
 
 <style>
 
@@ -879,15 +899,10 @@ $(document).on('click', '.delete-class', function(e){
 ========================================== */
 
 .class-actions{
-
-    display:grid;
-
-    grid-template-columns:repeat(3,1fr);
-
-    gap:4px;
-
-    margin-top:10px;
-
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 4px;
+    margin-top: 10px;
 }
 
 .class-actions a{
@@ -1179,5 +1194,28 @@ $(document).on('click', '.delete-class', function(e){
 
 }
 
+
+
+
+
+@media print {
+
+    .cp-actions,
+    .cp-fab,
+    .drawer-overlay,
+    .drawer-panel,
+    .class-actions {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .class-block {
+        break-inside: avoid;
+    }
+
+}
 
 </style>

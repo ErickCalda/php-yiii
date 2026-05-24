@@ -13,7 +13,7 @@ use app\models\Roles;
 
 class UsuariosController extends Controller
 {
- public function behaviors()
+public function behaviors()
 {
     return [
         'access' => [
@@ -29,22 +29,23 @@ class UsuariosController extends Controller
             ],
             'rules' => [
 
-                // ADMIN ONLY
+                // 🔴 SOLO ADMIN PUEDE VER INDEX
                 [
                     'allow' => true,
-                    'actions' => ['create', 'update', 'delete'],
+                    'actions' => ['index', 'create', 'update', 'delete'],
                     'roles' => ['@'],
                     'matchCallback' => function () {
                         return Yii::$app->user->identity->rol->nombre === 'admin';
                     },
                 ],
 
-                // LOGGED USERS
+                // 🟢 USUARIOS LOGUEADOS (SIN INDEX)
                 [
                     'allow' => true,
-                    'actions' => ['index', 'view', 'perfil', 'cambiar-password'],
+                    'actions' => ['view', 'perfil', 'cambiar-password'],
                     'roles' => ['@'],
                 ],
+
             ],
         ],
     ];

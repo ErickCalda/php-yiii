@@ -44,7 +44,7 @@ class SiteController extends Controller
     
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->redirect(['usuarios/index']);
+            return $this->redirect(['site/index']);
         }
     
         $model->clave = ''; // Limpia el campo clave por seguridad

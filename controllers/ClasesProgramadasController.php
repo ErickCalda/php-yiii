@@ -20,6 +20,10 @@ class ClasesProgramadasController extends Controller
 {
  
 
+ const ESTADO_PROGRESO = 0;
+    const ESTADO_ACTIVO = 1;
+    const ESTADO_CANCELADO = 2;
+
 
 public function behaviors()
 {
@@ -677,6 +681,56 @@ public function actionGetHorasDisponibles()
 }
 
 
+
+public function actionImprimirHorario($docente_id = null)
+{
+    $searchModel = new ClasesProgramadasSearch();
+    $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+    $query = $dataProvider->query;
+
+    $usuario = Yii::$app->user->identity;
+
+    /* =========================
+       SOLO ACTIVOS
+    ========================= */
+$query->andWhere(['clases_programadas.estado' => 1]);
+
+    /* =========================
+       SEGURIDAD: CONTROL DE ACCESO
+    ========================= */
+    if ($usuario->rol_id != Usuarios::ROL_ADMIN) {
+
+        // docente solo ve lo suyo
+        $query->andWhere(['docente_id' => $usuario->id]);
+
+    } else {
+
+        // admin puede filtrar por docente
+        if ($docente_id) {
+            $query->andWhere(['docente_id' => $docente_id]);
+        }
+    }
+
+    /* =========================
+       ORDENAMIENTO DE HORARIO
+    ========================= */
+    $query->orderBy([
+        new \yii\db\Expression("
+            FIELD(
+                dia_semana,
+                'lunes','martes','miercoles',
+                'jueves','viernes','sabado'
+            )
+        "),
+        'hora_inicio' => SORT_ASC
+    ]);
+
+    return $this->renderPartial('imprimir-horario', [
+        'dataProvider' => $dataProvider,
+        'usuario' => $usuario,
+    ]);
+}
 
 
 }

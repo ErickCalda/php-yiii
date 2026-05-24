@@ -256,37 +256,33 @@ $docentes = ArrayHelper::map(
 );
 ?>
 
-<?php if ($esAdmin): ?>
+<?php
 
-    <?= $form->field($model, 'docente_id')->dropDownList(
-        $docentes,
-        [
-            'prompt' => 'Seleccione docente'
-        ]
-    ) ?>
+// si es nuevo registro
+if ($model->isNewRecord) {
 
-<?php else: ?>
+    // asignar automáticamente el usuario logueado
+    $model->docente_id = Yii::$app->user->id;
+}
 
-    <?php
-    $docenteActual = \app\models\Usuarios::findOne($model->docente_id);
-    ?>
+$docenteActual = \app\models\Usuarios::findOne($model->docente_id);
 
-    <?= $form->field($model, 'docente_id')
-        ->hiddenInput()
-        ->label(false) ?>
+?>
 
-    <div class="locked-user-box">
-        Docente asignado:
-        <strong>
-            <?= Html::encode(
-                $docenteActual
-                    ? $docenteActual->nombre . ' ' . $docenteActual->apellido
-                    : 'Sin docente'
-            ) ?>
-        </strong>
-    </div>
+<?= $form->field($model, 'docente_id')
+    ->hiddenInput()
+    ->label(false) ?>
 
-<?php endif; ?>
+<div class="locked-user-box">
+    Docente asignado:
+    <strong>
+        <?= Html::encode(
+            $docenteActual
+                ? $docenteActual->nombre . ' ' . $docenteActual->apellido
+                : 'Sin docente'
+        ) ?>
+    </strong>
+</div>
 
 <!-- DÍA -->
 <?= $form->field($model, 'dia_semana')->dropDownList([

@@ -86,23 +86,29 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 
 
 <?php if (!Yii::$app->user->isGuest): ?>
-    <!-- Bitacora -->
+
+
+
     <li class="nav-item mb-1">
-        <a class="nav-link  d-flex align-items-center" style="color:#6366F1;"href="<?= \yii\helpers\Url::to(['/bitacoras/index']) ?>">
-            <i class="bi  bi-file-earmark-person-fill"  style="color:#6366F1;"></i>
-            <span class="link-text ms-2">Bitacora</span>
+        <a class="nav-link d-flex align-items-center" style="color:#6366F1;"
+           href="<?= \yii\helpers\Url::to(['/bitacoras/index']) ?>">
+            <i class="bi bi-file-earmark-person-fill" style="color:#6366F1;"></i>
+            <span class="link-text ms-2">Bitácora</span>
         </a>
     </li>
 
-    <!-- Laboratorios -->
+<?php if (!Yii::$app->user->isGuest && Yii::$app->user->identity->rol->nombre === 'admin'): ?>
     <li class="nav-item mb-1">
-        <a class="nav-link  d-flex align-items-center collapsed"style="color:#6366F1;" data-bs-toggle="" href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>" role="button">
-            <i class="bi  bi-building"  style="color:#6366F1;"></i><span class="link-text ms-2">Laboratorio</span>
-            
-        </a>
-        
-    </li>
+        <a class="nav-link d-flex align-items-center collapsed"
+           style="color:#6366F1;"
+           href="<?= \yii\helpers\Url::to(['/laboratorios/index']) ?>">
 
+            <i class="bi bi-building" style="color:#6366F1;"></i>
+            <span class="link-text ms-2">Laboratorio</span>
+
+        </a>
+    </li>
+<?php endif; ?>
 
 
 <!-- Clases Programadas -->
@@ -152,16 +158,7 @@ $isAdmin = !Yii::$app->user->isGuest
 
 <?php else: ?>
 
-    <!-- LOGOUT -->
-    <li class="nav-item mb-1">
-        <a class="nav-link d-flex align-items-center"
-           href="<?= \yii\helpers\Url::to(['/site/logout']) ?>"
-           data-method="post">
 
-            <i class="bi bi-box-arrow-right"></i>
-            <span class="link-text ms-2">Logout</span>
-        </a>
-    </li>
 
 <?php endif; ?>
 
@@ -256,11 +253,7 @@ $isAdmin = method_exists($user, 'isAdmin') ? $user->isAdmin() : ($user->rol->nom
                 <span>Mi perfil</span>
             </a>
 
-            <!-- CONFIGURACIÓN (opcional futuro) -->
-            <a href="#" class="menu-item">
-                <i class="bi bi-gear"></i>
-                <span>Configuración</span>
-            </a>
+        
 
             <div class="menu-divider"></div>
 
