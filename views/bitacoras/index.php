@@ -254,3 +254,171 @@ if ($clase) {
 </div>
 
 </div>
+
+
+
+
+
+
+<?php
+
+$script = <<<JS
+
+const modal = document.getElementById('crudModal');
+const crudContent = document.getElementById('crudContent');
+
+/* =========================================
+   ABRIR MODAL
+========================================= */
+
+function openModal(url)
+{
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.text())
+    .then(html => {
+
+        crudContent.innerHTML = html;
+
+        modal.classList.add('show');
+
+    })
+    .catch(error => {
+
+        console.error(error);
+
+    });
+}
+
+/* =========================================
+   CREATE
+========================================= */
+
+document.getElementById('openCreateModal')
+?.addEventListener('click', function (e) {
+
+    e.preventDefault();
+
+    const createUrl = "<?= \yii\helpers\Url::to(['bitacoras/create']) ?>";
+
+    openModal(createUrl);
+
+});
+
+/* =========================================
+   EDIT
+========================================= */
+
+document.addEventListener('click', function(e){
+
+    const btn = e.target.closest('.open-edit');
+
+    if(!btn) return;
+
+    e.preventDefault();
+
+    openModal(btn.href);
+
+});
+
+/* =========================================
+   CERRAR MODAL
+========================================= */
+
+document.getElementById('closeCrudModal')
+?.addEventListener('click', function(){
+
+    modal.classList.remove('show');
+
+});
+
+document.querySelector('.crud-backdrop')
+?.addEventListener('click', function(){
+
+    modal.classList.remove('show');
+
+});
+
+/* =========================================
+   FORM AJAX
+========================================= */
+
+document.addEventListener('submit', async function(e){
+
+    const form = e.target.closest('#bitacora-form');
+
+    if(!form) return;
+
+    e.preventDefault();
+
+    /* EVITAR DOBLE SUBMIT */
+
+    if(form.dataset.sending === '1'){
+        return;
+    }
+
+    form.dataset.sending = '1';
+
+    try {
+
+        const res = await fetch(form.action, {
+
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+
+        });
+
+        const contentType = res.headers.get('content-type');
+
+        let response;
+
+        if(contentType && contentType.includes('application/json')){
+
+            response = await res.json();
+
+        }else{
+
+            response = await res.text();
+
+        }
+
+        /* SUCCESS */
+
+        if(typeof response === 'object' && response.success){
+
+            modal.classList.remove('show');
+
+            $.pjax.reload({
+                container:'#bitacoraPjax'
+            });
+
+            return;
+        }
+
+        /* VALIDACION */
+
+        crudContent.innerHTML = response;
+
+    } catch(error){
+
+        console.error(error);
+
+    } finally {
+
+        form.dataset.sending = '0';
+
+    }
+
+});
+
+JS;
+
+$this->registerJs($script);
+
+?>

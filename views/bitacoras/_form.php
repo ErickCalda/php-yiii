@@ -14,7 +14,7 @@ use app\models\ClasesProgramadas;
 <div class="bitacoras-form">
 
 <?php $form = ActiveForm::begin([
-    'id' => 'bitacoraForm',
+    'id' => 'bitacora-form',
     'options' => [
         'autocomplete' => 'off'
     ]
@@ -132,11 +132,13 @@ use app\models\ClasesProgramadas;
 
 <div class="form-actions">
 
-    <?= Html::submitButton('Guardar Bitácora', [
-        'class' => 'btn-save'
-    ]) ?>
+ <?= Html::submitButton('Guardar Bitácora', [
+    'class' => 'btn-save',
+    'data-disable-with' => 'Guardando...'
+]) ?>
 
 </div>
+
 
 <?php ActiveForm::end(); ?>
 

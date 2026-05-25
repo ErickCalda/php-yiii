@@ -75,50 +75,57 @@ class BitacorasController extends Controller
     /* ==================================
      * CREAR
      * ================================== */
-    public function actionCreate()
-    {
-        $model = new Bitacoras();
+public function actionCreate()
+{
+    $model = new Bitacoras();
 
-        if ($model->load(Yii::$app->request->post())) {
+    if (Yii::$app->request->isPost) {
 
-            if ($model->save()) {
-                return 'success';
-            }
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             Yii::$app->response->format = Response::FORMAT_JSON;
-            return $model->errors;
-        }
 
-        $this->layout = false;
+            return [
+                'success' => true
+            ];
+        }
 
         return $this->renderAjax('_form', [
             'model' => $model,
         ]);
     }
 
+    return $this->renderAjax('_form', [
+        'model' => $model,
+    ]);
+}
     /* ==================================
      * ACTUALIZAR
      * ================================== */
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
+public function actionUpdate($id)
+{
+    $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post())) {
+    if (Yii::$app->request->isPost) {
 
-            if ($model->save()) {
-                return 'success';
-            }
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             Yii::$app->response->format = Response::FORMAT_JSON;
-            return $model->errors;
-        }
 
-        $this->layout = false;
+            return [
+                'success' => true
+            ];
+        }
 
         return $this->renderAjax('_form', [
             'model' => $model,
         ]);
     }
+
+    return $this->renderAjax('_form', [
+        'model' => $model,
+    ]);
+}
 
     /* ==================================
      * ELIMINAR

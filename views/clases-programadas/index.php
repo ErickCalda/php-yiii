@@ -570,15 +570,20 @@ $(document).on('click', '.delete-class', function(e){
 
 .hero-panel{
 
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
+    display:grid;
 
-    gap:20px;
+    grid-template-columns:
+        minmax(260px,1fr)
+        auto
+        auto;
+
+    align-items:end;
+
+    gap:14px;
 
     margin-bottom:20px;
 
-    padding:22px;
+    padding:20px 22px;
 
     background:#FFFFFF;
 
@@ -633,11 +638,18 @@ $(document).on('click', '.delete-class', function(e){
    ACTIONS
 ========================================== */
 
+/* ACTIONS */
 .cp-actions{
 
     display:flex;
+
+    align-items:center;
+
     gap:8px;
-    flex-wrap:wrap;
+
+    flex-wrap:nowrap;
+
+    white-space:nowrap;
 
 }
 
@@ -659,6 +671,7 @@ $(document).on('click', '.delete-class', function(e){
 
     transition:.15s ease;
 
+    
 }
 
 .btn-soft:hover{
@@ -671,21 +684,24 @@ $(document).on('click', '.delete-class', function(e){
 /* ==========================================
    GRID HORARIO
 ========================================== */
+/* ==========================================
+   GRID HORARIO RESPONSIVE
+========================================== */
 
 .schedule-grid{
 
     display:grid;
 
-    grid-template-columns:repeat(6, minmax(180px,1fr));
+    grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
 
-    gap:12px;
+    gap:14px;
 
-    overflow-x:auto;
+    align-items:start;
 
-    padding-bottom:4px;
+    width:100%;
 
 }
-
 
 /* ==========================================
    COLUMNA DEL DÍA
@@ -700,11 +716,42 @@ $(document).on('click', '.delete-class', function(e){
 
     overflow:hidden;
 
-    min-height:700px;
+    display:flex;
+    flex-direction:column;
+
+    height:78vh;
+
+    min-height:650px;
 
 }
 
+/* SCROLL INTERNO */
+
+.day-column{
+
+    overflow-y:auto;
+
+    scrollbar-width:none;
+
+    -ms-overflow-style:none;
+
+}
+
+.day-column::-webkit-scrollbar{
+
+    width:0;
+    height:0;
+
+}
+
+
 .day-header{
+
+    position:sticky;
+
+    top:0;
+
+    z-index:5;
 
     background:#2C3E50;
 
@@ -721,7 +768,6 @@ $(document).on('click', '.delete-class', function(e){
     border-bottom:1px solid #1E293B;
 
 }
-
 
 /* ==========================================
    BLOQUE DE CLASE
@@ -744,6 +790,14 @@ $(document).on('click', '.delete-class', function(e){
         0 1px 2px rgba(0,0,0,.04);
 
 }
+.class-block{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:6px;
+
+}
 
 .class-block:hover{
 
@@ -762,6 +816,8 @@ $(document).on('click', '.delete-class', function(e){
 
     justify-content:space-between;
     align-items:flex-start;
+
+    flex-wrap:wrap;
 
     gap:8px;
 
@@ -989,45 +1045,79 @@ $(document).on('click', '.delete-class', function(e){
    RESPONSIVE
 ========================================== */
 
-@media(max-width:1200px){
-
-    .schedule-grid{
-
-        grid-template-columns:repeat(6, 190px);
-
-    }
-
-}
 
 @media(max-width:900px){
 
     .hero-panel{
 
-        flex-direction:column;
+        grid-template-columns:1fr;
+
         align-items:flex-start;
 
     }
 
+    .cp-actions{
+
+        width:100%;
+
+        flex-wrap:wrap;
+
+    }
+
 }
 
-@media(max-width:768px){
+
+@media(max-width:640px){
 
     .schedule-page{
+        padding:10px;
+    }
 
-        padding:12px;
+    .cp-actions{
+
+        display:grid;
+
+        grid-template-columns:1fr;
+
+        width:100%;
+    }
+
+    .btn-soft{
+        width:100%;
+    }
+
+    .class-actions{
+
+        grid-template-columns:1fr 1fr;
 
     }
 
-    .hero-panel h1{
+    .cp-fab{
 
-        font-size:22px;
+        left:10px;
+        right:10px;
 
+        bottom:10px;
+
+        text-align:center;
     }
 
 }
 
 
+@media(max-width:640px){
 
+    .day-column{
+
+        height:auto;
+
+        min-height:unset;
+
+        overflow:visible;
+
+    }
+
+}
 
 
 

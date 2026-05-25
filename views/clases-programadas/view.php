@@ -128,273 +128,548 @@ $estadoTexto = match($model->estado){
 </div>
 
 <style>
+<style>
+
+/* ==========================================
+   EXECUTIVE DESKTOP UI
+========================================== */
+
+:root{
+
+    --bg:#EEF2F6;
+    --surface:#FFFFFF;
+
+    --navy:#1F2937;
+    --navy-dark:#111827;
+
+    --border:#D5DEE8;
+    --border-strong:#BAC6D3;
+
+    --text:#111827;
+    --muted:#6B7280;
+
+    --success-bg:#EDF7F0;
+    --success-text:#355E3B;
+
+    --warning-bg:#FFF6EA;
+    --warning-text:#9A5B13;
+
+    --danger-bg:#FDF0F2;
+    --danger-text:#7A2438;
+
+}
+
+
+/* ==========================================
+   PAGE
+========================================== */
 
 .executive-page{
-    max-width:1100px;
+
+    max-width:1400px;
+
     margin:auto;
-    padding:28px;
+
+    padding:24px;
+
     font-family:"Segoe UI", system-ui, sans-serif;
-    color:#111827;
+
+    color:var(--text);
+
 }
 
-/* =========================
-   TOP BAR
-========================= */
+
+/* ==========================================
+   TOPBAR
+========================================== */
+
 .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    gap:20px;
 
-    margin-bottom:24px;
-    padding-bottom:18px;
+    display:grid;
 
-    border-bottom:1px solid #D9E0E8;
+    grid-template-columns:1fr auto;
+
+    gap:18px;
+
+    align-items:end;
+
+    margin-bottom:18px;
+
 }
+
+
+/* ==========================================
+   TITLE
+========================================== */
 
 .eyebrow{
-    font-size:11px;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    height:24px;
+
+    padding:0 10px;
+
+    background:#E7ECF2;
+
+    border:1px solid #D5DDE7;
+    border-radius:4px;
+
+    font-size:10px;
     font-weight:700;
-    letter-spacing:1px;
-    color:#6B7280;
+
+    letter-spacing:.7px;
+
+    color:#475569;
+
     text-transform:uppercase;
+
 }
 
 .title-block h1{
-    margin:6px 0 0;
-    font-size:28px;
+
+    margin:10px 0 0;
+
+    font-size:32px;
     font-weight:700;
-    color:#111827;
+
+    color:var(--navy-dark);
+
+    letter-spacing:-.5px;
+
 }
 
-/* =========================
-   ACTIONS
-========================= */
+
+/* ==========================================
+   ACTION BAR
+========================================== */
+
 .action-bar{
+
     display:flex;
+
+    align-items:center;
+
     gap:10px;
+
+    flex-wrap:wrap;
+
 }
 
 .action-btn{
+
     text-decoration:none;
 
     display:inline-flex;
+
     align-items:center;
     justify-content:center;
 
-    min-width:110px;
+    min-width:120px;
 
-    padding:10px 18px;
+    height:40px;
 
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:.2px;
+    padding:0 18px;
 
     border-radius:5px;
+
     border:1px solid;
 
-    cursor:pointer;
-    transition:all .18s ease;
+    font-size:12px;
+    font-weight:700;
+
+    letter-spacing:.3px;
+
+    transition:.15s ease;
+
 }
 
-/* EDIT */
+
+/* PRIMARY */
+
 .action-btn.primary{
+
     background:#2F3A4A;
+
     border-color:#2F3A4A;
+
     color:#FFFFFF;
+
 }
 
 .action-btn.primary:hover{
-    background:#202833;
-    border-color:#202833;
+
+    background:#1F2937;
+
 }
 
-/* DELETE */
+
+/* DANGER */
+
 .action-btn.danger{
+
     background:#6B2737;
+
     border-color:#6B2737;
+
     color:#FFFFFF;
+
 }
 
 .action-btn.danger:hover{
-    background:#54202B;
-    border-color:#54202B;
+
+    background:#56202C;
+
 }
 
-/* =========================
-   MAIN CARD
-========================= */
-.executive-card{
-    background:#FFFFFF;
 
-    border:1px solid #D6DCE5;
+/* ==========================================
+   MAIN PANEL
+========================================== */
+
+.executive-card{
+
+    background:var(--surface);
+
+    border:1px solid var(--border-strong);
+
     border-radius:5px;
 
     overflow:hidden;
+
+    box-shadow:
+        0 1px 2px rgba(15,23,42,.04),
+        0 8px 24px rgba(15,23,42,.04);
+
 }
 
-/* =========================
+
+/* ==========================================
    HEADER
-========================= */
+========================================== */
+
 .card-header{
 
     display:flex;
+
     justify-content:space-between;
+
     align-items:center;
+
     gap:20px;
 
-    padding:22px;
+    padding:22px 24px;
 
-    border-bottom:1px solid #E5EAF1;
+    background:
+        linear-gradient(
+            to bottom,
+            #FBFCFD,
+            #F4F7FA
+        );
+
+    border-bottom:1px solid var(--border);
+
 }
 
+
+/* ==========================================
+   USER
+========================================== */
+
 .user-block{
+
     display:flex;
+
     align-items:center;
-    gap:14px;
+
+    gap:16px;
+
 }
 
 .user-initial{
-    width:48px;
-    height:48px;
+
+    width:54px;
+    height:54px;
+
+    flex-shrink:0;
 
     display:flex;
+
     align-items:center;
     justify-content:center;
 
     border-radius:5px;
 
     background:#1F2937;
+
     color:#FFFFFF;
 
-    font-size:16px;
+    font-size:18px;
     font-weight:700;
+
+    border:1px solid #111827;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08);
+
 }
 
 .user-name{
-    font-size:17px;
+
+    font-size:18px;
     font-weight:700;
+
     color:#111827;
+
 }
 
 .user-role{
-    margin-top:2px;
+
+    margin-top:4px;
+
     font-size:12px;
+
     color:#6B7280;
+
 }
 
-/* =========================
+
+/* ==========================================
    STATUS
-========================= */
+========================================== */
+
 .status-badge{
 
-    flex:0 0 auto;
-
-    min-width:120px;
-
     display:inline-flex;
+
     align-items:center;
     justify-content:center;
 
-    white-space:nowrap;
-    text-align:center;
+    min-width:130px;
 
-    padding:8px 14px;
+    height:36px;
+
+    padding:0 14px;
 
     border-radius:4px;
 
     font-size:12px;
     font-weight:700;
+
     letter-spacing:.2px;
+
+    border:1px solid transparent;
+
+    white-space:nowrap;
+
 }
 
 .status-badge.progress{
-    background:#F7F4EE;
-    color:#8B5E34;
+
+    background:var(--warning-bg);
+    color:var(--warning-text);
+
+    border-color:#F3DFC2;
+
 }
 
 .status-badge.active{
-    background:#F2F7F3;
-    color:#355E3B;
+
+    background:var(--success-bg);
+    color:var(--success-text);
+
+    border-color:#D5E7DA;
+
 }
 
 .status-badge.cancelled{
-    background:#F8F3F4;
-    color:#6B2C3E;
+
+    background:var(--danger-bg);
+    color:var(--danger-text);
+
+    border-color:#F0D7DD;
+
 }
 
-/* =========================
+
+/* ==========================================
    INFO GRID
-========================= */
+========================================== */
+
 .info-grid{
+
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(240px,1fr));
+
+    gap:14px;
+
+    padding:22px;
+
+    background:#F7F9FC;
+
 }
+
+
+/* ==========================================
+   INFO CARD
+========================================== */
 
 .info-row{
-    padding:20px 22px;
 
-    border-bottom:1px solid #EEF2F7;
+    background:#FFFFFF;
+
+    border:1px solid #DCE4EC;
+
+    border-radius:5px;
+
+    padding:16px;
+
+    min-height:92px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    transition:.15s ease;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.7);
+
 }
 
-.info-row:nth-child(odd){
-    border-right:1px solid #EEF2F7;
+.info-row:hover{
+
+    border-color:#B9C6D4;
+
+    transform:translateY(-1px);
+
 }
+
+
+/* ==========================================
+   LABEL
+========================================== */
 
 .info-row label{
-    display:block;
 
-    margin-bottom:6px;
+    display:flex;
 
-    font-size:11px;
+    align-items:center;
+
+    gap:6px;
+
+    margin-bottom:8px;
+
+    font-size:10px;
     font-weight:700;
-    letter-spacing:.6px;
+
+    letter-spacing:.8px;
+
     text-transform:uppercase;
 
-    color:#6B7280;
+    color:#64748B;
+
 }
+
+
+/* ==========================================
+   VALUE
+========================================== */
 
 .info-row div{
+
     font-size:15px;
-    font-weight:600;
+    font-weight:700;
+
     color:#111827;
+
+    line-height:1.4;
+
 }
 
-/* =========================
+
+/* ==========================================
    RESPONSIVE
-========================= */
-@media(max-width:768px){
+========================================== */
+
+@media(max-width:900px){
 
     .topbar{
-        flex-direction:column;
+
+        grid-template-columns:1fr;
+
         align-items:flex-start;
+
     }
 
     .action-bar{
+
         width:100%;
-    }
 
-    .action-btn{
-        flex:1;
-    }
-
-    .card-header{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .status-badge{
-        margin-top:8px;
-    }
-
-    .info-grid{
-        grid-template-columns:1fr;
-    }
-
-    .info-row:nth-child(odd){
-        border-right:none;
     }
 
 }
+
+
+@media(max-width:640px){
+
+    .executive-page{
+
+        padding:12px;
+
+    }
+
+    .title-block h1{
+
+        font-size:26px;
+
+    }
+
+    .action-bar{
+
+        display:grid;
+
+        grid-template-columns:1fr;
+
+        width:100%;
+
+    }
+
+    .action-btn{
+
+        width:100%;
+
+    }
+
+    .card-header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .status-badge{
+
+        width:100%;
+
+    }
+
+    .info-grid{
+
+        grid-template-columns:1fr;
+
+        padding:14px;
+
+    }
+
+}
+
 
 </style>
